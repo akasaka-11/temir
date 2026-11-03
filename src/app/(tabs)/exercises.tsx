@@ -1,4 +1,5 @@
-import { FlatList, StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -18,12 +19,18 @@ export default function ExercisesScreen() {
         data={exercises}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <ExerciseListItem
-            name={item.displayName}
-            muscleGroup={item.muscleGroup}
-            equipment={item.equipment}
-            isCustom={item.isCustom}
-          />
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push({ pathname: '/exercise/[id]', params: { id: item.id } })}
+            style={({ pressed }) => pressed && styles.pressed}
+          >
+            <ExerciseListItem
+              name={item.displayName}
+              muscleGroup={item.muscleGroup}
+              equipment={item.equipment}
+              isCustom={item.isCustom}
+            />
+          </Pressable>
         )}
         ItemSeparatorComponent={Separator}
         keyboardShouldPersistTaps="handled"
@@ -49,4 +56,5 @@ const styles = StyleSheet.create({
     marginLeft: spacing.lg,
   },
   emptyContainer: { flexGrow: 1 },
+  pressed: { backgroundColor: colors.surface },
 });

@@ -3,6 +3,7 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 import type { CompletedSet } from '@/lib/activeWorkout';
 import { type HistorySetRow, pickLatestBlocks } from '@/lib/history';
 import { newId } from '@/lib/id';
+import type { ExerciseHistoryRow } from '@/lib/progress';
 import { bestsOf, type ExerciseBests, type SetResult } from '@/lib/workoutMath';
 
 import type { Database } from '../client';
@@ -59,6 +60,29 @@ export function getExerciseBests(
     grouped.set(row.exerciseId, sets);
   }
   return new Map([...grouped].map(([id, sets]) => [id, bestsOf(sets)]));
+}
+
+/** Every completed set of one exercise from finished workouts, with the workout date. */
+export function getExerciseHistory(db: Database, exerciseId: string): ExerciseHistoryRow[] {
+  return db
+    .select({
+      workoutId: workoutSets.workoutId,
+      startedAt: workouts.startedAt,
+      weightKg: workoutSets.weightKg,
+      reps: workoutSets.reps,
+    })
+    .from(workoutSets)
+    .innerJoin(workouts, eq(workouts.id, workoutSets.workoutId))
+    .where(
+      and(
+        eq(workoutSets.exerciseId, exerciseId),
+        eq(workoutSets.isCompleted, true),
+        isNull(workoutSets.deletedAt),
+        finishedAndAlive,
+      ),
+    )
+    .orderBy(asc(workouts.startedAt), asc(workoutSets.setIndex))
+    .all();
 }
 
 /** Finished, not deleted workouts, newest first. Pass to useLiveQuery. */

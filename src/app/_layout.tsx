@@ -45,6 +45,7 @@ export default function RootLayout() {
             name="workout/add-exercises"
             options={{ presentation: 'modal', title: t('workout.addExercises') }}
           />
+          <Stack.Screen name="exercise/[id]" options={{ title: '', headerBackTitle: t('tabs.exercises') }} />
           <Stack.Screen name="routine/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen
             name="routine/add-exercises"

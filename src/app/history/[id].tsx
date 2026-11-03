@@ -1,6 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
@@ -71,7 +71,12 @@ export default function WorkoutDetailScreen() {
 
       {stats?.exercises.map((exercise, exerciseIndex) => (
         <View key={`${exercise.exerciseId}-${exerciseIndex}`} style={styles.card}>
-          <Text style={styles.exerciseName}>{names.get(exercise.exerciseId) ?? ''}</Text>
+          <Pressable
+            accessibilityRole="link"
+            onPress={() => router.push({ pathname: '/exercise/[id]', params: { id: exercise.exerciseId } })}
+          >
+            <Text style={styles.exerciseName}>{names.get(exercise.exerciseId) ?? ''}</Text>
+          </Pressable>
           <View style={styles.row}>
             <Text style={[styles.headerCell, styles.indexCell]}>{t('workout.columns.set')}</Text>
             <Text style={[styles.headerCell, styles.resultCell]}>{t('history.columns.result')}</Text>

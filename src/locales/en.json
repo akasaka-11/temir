@@ -230,5 +230,19 @@
       "nameTooLong": "Name must be at most {{max}} characters",
       "noExercises": "Add at least one exercise"
     }
+  },
+  "progress": {
+    "notFound": "Exercise not found",
+    "noHistory": "No finished workouts with this exercise yet. Records and charts appear after the first one.",
+    "records": "Personal records",
+    "bestWorkoutVolume": "Best workout volume",
+    "chart": "Progress",
+    "needMoreData": "The chart appears after two workouts with this exercise.",
+    "recent": "Recent workouts",
+    "metrics": {
+      "oneRepMax": "Est. 1RM",
+      "maxWeight": "Max weight",
+      "volume": "Volume"
+    }
   }
 }
