@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { StatGrid } from '@/components/StatGrid';
 import { useExerciseNames } from '@/features/exercises/useExerciseNames';
+import { buildWorkoutStatTiles } from '@/features/workout/statTiles';
 import { formatWeight } from '@/lib/units';
-import { formatDuration } from '@/lib/workoutMath';
 import { useActiveWorkout } from '@/store/activeWorkout';
 import { useSettings } from '@/store/settings';
 import { colors, radius, spacing, typography } from '@/theme';
@@ -25,12 +25,7 @@ export default function WorkoutSummaryScreen() {
 
   if (!summary) return null;
 
-  const stats = [
-    { label: t('summary.duration'), value: formatDuration(summary.durationMs) },
-    { label: t('summary.volume'), value: `${formatWeight(summary.volumeKg, unit, i18n.language)} ${t(`units.${unit}`)}` },
-    { label: t('summary.sets'), value: String(summary.setCount) },
-    { label: t('summary.exercises'), value: String(summary.exerciseCount) },
-  ];
+  const stats = buildWorkoutStatTiles(summary, t, unit, i18n.language);
 
   return (
     <View style={styles.screen}>

@@ -1,20 +1,22 @@
 import { sql } from 'drizzle-orm';
-import Storage from 'expo-sqlite/kv-store';
 
 import type { Database } from '../client';
 import { exercises } from '../schema';
 import { buildSeedRows } from './buildSeedRows';
 import { BUILT_IN_EXERCISES, EXERCISE_SEED_VERSION } from './exercises';
 
-const SEED_VERSION_KEY = 'db.exerciseSeedVersion';
+// The applied seed version is kept inside the main database (SQLite user_version,
+// unused by Drizzle), so it can never disagree with the data it describes.
+function getAppliedSeedVersion(db: Database): number {
+  return db.$client.getFirstSync<{ user_version: number }>('PRAGMA user_version')?.user_version ?? 0;
+}
 
 /**
  * Inserts or refreshes built-in exercises when the seed list changed.
  * Safe to call on every app start: it does nothing if the data is up to date.
  */
 export function seedDatabase(db: Database): void {
-  const applied = Number(Storage.getItemSync(SEED_VERSION_KEY) ?? 0);
-  if (applied >= EXERCISE_SEED_VERSION) return;
+  if (getAppliedSeedVersion(db) >= EXERCISE_SEED_VERSION) return;
 
   const rows = buildSeedRows(BUILT_IN_EXERCISES, Date.now());
   db.transaction((tx) => {
@@ -32,5 +34,5 @@ export function seedDatabase(db: Database): void {
       .run();
   });
 
-  Storage.setItemSync(SEED_VERSION_KEY, String(EXERCISE_SEED_VERSION));
+  db.$client.execSync(`PRAGMA user_version = ${EXERCISE_SEED_VERSION}`);
 }

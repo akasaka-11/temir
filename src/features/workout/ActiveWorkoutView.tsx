@@ -1,3 +1,4 @@
+import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useKeepAwake } from 'expo-keep-awake';
 import { router } from 'expo-router';
 import { useMemo } from 'react';
@@ -6,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
 import { db } from '@/db/client';
-import { getPreviousSets } from '@/db/repositories/workouts';
+import { getPreviousSets, selectFinishedWorkouts } from '@/db/repositories/workouts';
 import { useExerciseNames } from '@/features/exercises/useExerciseNames';
 import type { ActiveWorkout } from '@/lib/activeWorkout';
 import { countCompletedSets } from '@/lib/activeWorkout';
@@ -25,10 +26,12 @@ export function ActiveWorkoutView({ workout }: { workout: ActiveWorkout }) {
   const names = useExerciseNames();
   const rest = useRestTimer();
 
+  // Re-read "previous" when history changes too (e.g. a workout deleted mid-session).
+  const { data: finishedWorkouts } = useLiveQuery(selectFinishedWorkouts(db));
   const exerciseIdsKey = workout.exercises.map((e) => e.exerciseId).join(',');
   const previousSets = useMemo(
     () => getPreviousSets(db, exerciseIdsKey ? exerciseIdsKey.split(',') : []),
-    [exerciseIdsKey],
+    [exerciseIdsKey, finishedWorkouts],
   );
 
   const completed = countCompletedSets(workout);
@@ -46,7 +49,14 @@ export function ActiveWorkoutView({ workout }: { workout: ActiveWorkout }) {
   }
 
   function finish() {
-    const result = finishWorkout(db, workout);
+    let result: ReturnType<typeof finishWorkout>;
+    try {
+      result = finishWorkout(db, workout);
+    } catch (error) {
+      // The workout stays in the store, so nothing is lost and the user can retry.
+      Alert.alert(t('workout.saveErrorTitle'), error instanceof Error ? error.message : String(error));
+      return;
+    }
     if (result.status === 'empty') {
       Alert.alert(t('workout.emptyFinishTitle'), t('workout.emptyFinishBody'), [
         { text: t('common.cancel'), style: 'cancel' },

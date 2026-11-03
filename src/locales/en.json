@@ -39,7 +39,8 @@
       "set": "Set",
       "previous": "Previous",
       "reps": "Reps"
-    }
+    },
+    "saveErrorTitle": "Couldn't save the workout"
   },
   "rest": {
     "title": "Rest",

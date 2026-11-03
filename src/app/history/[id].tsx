@@ -5,13 +5,14 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
-import { type Stat, StatGrid } from '@/components/StatGrid';
+import { StatGrid } from '@/components/StatGrid';
 import { db } from '@/db/client';
 import { deleteWorkout, getSetsForWorkouts, getWorkout } from '@/db/repositories/workouts';
 import { useExerciseNames } from '@/features/exercises/useExerciseNames';
+import { buildWorkoutStatTiles } from '@/features/workout/statTiles';
 import { buildWorkoutStats, formatTime, formatWorkoutDate } from '@/lib/history';
 import { formatWeight } from '@/lib/units';
-import { estimateOneRepMax, formatDuration } from '@/lib/workoutMath';
+import { estimateOneRepMax } from '@/lib/workoutMath';
 import { useSettings } from '@/store/settings';
 import { colors, radius, spacing, typography } from '@/theme';
 
@@ -31,12 +32,17 @@ export default function WorkoutDetailScreen() {
 
   const finishedAt = workout.finishedAt ?? workout.startedAt;
   const unitLabel = t(`units.${unit}`);
-  const tiles: Stat[] = [
-    { label: t('summary.duration'), value: formatDuration(finishedAt - workout.startedAt) },
-    { label: t('summary.volume'), value: `${formatWeight(stats?.volumeKg ?? 0, unit, lang)} ${unitLabel}` },
-    { label: t('summary.sets'), value: String(stats?.setCount ?? 0) },
-    { label: t('summary.exercises'), value: String(stats?.exercises.length ?? 0) },
-  ];
+  const tiles = buildWorkoutStatTiles(
+    {
+      durationMs: finishedAt - workout.startedAt,
+      volumeKg: stats?.volumeKg ?? 0,
+      setCount: stats?.setCount ?? 0,
+      exerciseCount: stats?.exercises.length ?? 0,
+    },
+    t,
+    unit,
+    lang,
+  );
 
   function confirmDelete() {
     Alert.alert(t('history.deleteTitle'), t('history.deleteBody'), [

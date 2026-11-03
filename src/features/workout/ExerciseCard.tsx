@@ -1,5 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
+import { memo, useCallback } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -25,35 +26,58 @@ function toFallback(previous: SetResult | undefined, unit: WeightUnit): SetFallb
   return previous ? { weightText: weightToInput(previous.weightKg, unit), repsText: String(previous.reps) } : undefined;
 }
 
-export function ExerciseCard({ row, name, previousSets, unit }: Props) {
-  const { t, i18n } = useTranslation();
-  const { addSet, removeSet, removeExercise, updateSet, toggleSet } = useActiveWorkout.getState();
-  const restSeconds = useSettings((state) => state.restSeconds);
-  const rest = useRestTimer();
+// Store actions never change, so reading them once keeps callbacks stable.
+const actions = useActiveWorkout.getState();
 
-  function handleToggle(setId: string, previous: SetResult | undefined) {
-    const result = toggleSet(row.id, setId, toFallback(previous, unit));
-    if (result === null) {
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      return;
-    }
-    if (result) {
-      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      if (restSeconds > 0) rest.start(restSeconds);
-    }
-  }
+/** Memoized: typing in one exercise does not re-render the others (rows are immutable). */
+export const ExerciseCard = memo(function ExerciseCard({ row, name, previousSets, unit }: Props) {
+  const { t, i18n } = useTranslation();
+  const restSeconds = useSettings((state) => state.restSeconds);
+  const { start: startRest } = useRestTimer();
+  const rowId = row.id;
+
+  const handleChange = useCallback(
+    (setId: string, patch: { weightText?: string; repsText?: string }) => actions.updateSet(rowId, setId, patch),
+    [rowId],
+  );
+
+  const handleToggle = useCallback(
+    (setId: string, index: number) => {
+      const result = actions.toggleSet(rowId, setId, toFallback(previousSets?.[index], unit));
+      if (result === null) {
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        return;
+      }
+      if (result) {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        if (restSeconds > 0) startRest(restSeconds);
+      }
+    },
+    [rowId, previousSets, unit, restSeconds, startRest],
+  );
+
+  const handleRemoveSet = useCallback(
+    (setId: string, index: number) => {
+      Alert.alert(t('workout.removeSetTitle', { number: index + 1 }), undefined, [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('common.remove'), style: 'destructive', onPress: () => actions.removeSet(rowId, setId) },
+      ]);
+    },
+    [rowId, t],
+  );
+
+  const handleUsePrevious = useCallback(
+    (setId: string, index: number) => {
+      const fallback = toFallback(previousSets?.[index], unit);
+      if (fallback) actions.updateSet(rowId, setId, fallback);
+    },
+    [rowId, previousSets, unit],
+  );
 
   function confirmRemoveExercise() {
     Alert.alert(t('workout.removeExerciseTitle'), name, [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.remove'), style: 'destructive', onPress: () => removeExercise(row.id) },
-    ]);
-  }
-
-  function confirmRemoveSet(setId: string, index: number) {
-    Alert.alert(t('workout.removeSetTitle', { number: index + 1 }), undefined, [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.remove'), style: 'destructive', onPress: () => removeSet(row.id, setId) },
+      { text: t('common.remove'), style: 'destructive', onPress: () => actions.removeExercise(rowId) },
     ]);
   }
 
@@ -81,34 +105,34 @@ export function ExerciseCard({ row, name, previousSets, unit }: Props) {
         <View style={{ width: SET_COLUMNS.check }} />
       </View>
 
-      {row.sets.map((set, index) => {
-        const previous = previousSets?.[index];
-        return (
-          <SetRow
-            key={set.id}
-            index={index}
-            set={set}
-            previous={previous}
-            unit={unit}
-            language={i18n.language}
-            toggleLabel={t('workout.toggleSet', { number: index + 1 })}
-            onChange={(patch) => updateSet(row.id, set.id, patch)}
-            onToggle={() => handleToggle(set.id, previous)}
-            onLongPressIndex={() => confirmRemoveSet(set.id, index)}
-            onUsePrevious={() => {
-              const fallback = toFallback(previous, unit);
-              if (fallback) updateSet(row.id, set.id, fallback);
-            }}
-          />
-        );
-      })}
+      {row.sets.map((set, index) => (
+        <SetRow
+          key={set.id}
+          index={index}
+          set={set}
+          previous={previousSets?.[index]}
+          unit={unit}
+          language={i18n.language}
+          toggleLabel={t('workout.toggleSet', { number: index + 1 })}
+          onChange={handleChange}
+          onToggle={handleToggle}
+          onLongPressIndex={handleRemoveSet}
+          onUsePrevious={handleUsePrevious}
+        />
+      ))}
 
       <View style={styles.addSet}>
-        <Button label={t('workout.addSet')} icon="add" variant="secondary" compact onPress={() => addSet(row.id)} />
+        <Button
+          label={t('workout.addSet')}
+          icon="add"
+          variant="secondary"
+          compact
+          onPress={() => actions.addSet(rowId)}
+        />
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

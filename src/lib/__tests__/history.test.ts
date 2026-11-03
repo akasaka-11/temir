@@ -1,4 +1,10 @@
-import { buildWorkoutStats, formatWorkoutDate, groupByMonth, type HistorySetRow } from '../history';
+import {
+  buildWorkoutStats,
+  formatWorkoutDate,
+  groupByMonth,
+  type HistorySetRow,
+  pickLatestBlocks,
+} from '../history';
 
 function row(partial: Partial<HistorySetRow>): HistorySetRow {
   return {
@@ -49,6 +55,34 @@ describe('buildWorkoutStats', () => {
       row({ exercisePosition: 1 }),
     ]);
     expect(stats.get('w1')!.exercises).toHaveLength(2);
+  });
+});
+
+describe('pickLatestBlocks', () => {
+  it('takes sets from the newest workout only', () => {
+    const result = pickLatestBlocks([
+      row({ workoutId: 'new', weightKg: 105 }),
+      row({ workoutId: 'new', weightKg: 100, setIndex: 1 }),
+      row({ workoutId: 'old', weightKg: 90 }),
+    ]);
+    expect(result.get('bench')!.map((s) => s.weightKg)).toEqual([105, 100]);
+  });
+
+  it('uses only the first block when an exercise was repeated', () => {
+    const result = pickLatestBlocks([
+      row({ exercisePosition: 0, setIndex: 0, weightKg: 100 }),
+      row({ exercisePosition: 0, setIndex: 1, weightKg: 100 }),
+      row({ exercisePosition: 2, setIndex: 0, weightKg: 60 }),
+    ]);
+    expect(result.get('bench')!.map((s) => s.weightKg)).toEqual([100, 100]);
+  });
+
+  it('handles several exercises independently', () => {
+    const result = pickLatestBlocks([
+      row({ exerciseId: 'bench' }),
+      row({ exerciseId: 'squat', exercisePosition: 1, weightKg: 140 }),
+    ]);
+    expect([...result.keys()]).toEqual(['bench', 'squat']);
   });
 });
 

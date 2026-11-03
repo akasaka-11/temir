@@ -42,6 +42,25 @@ export function buildWorkoutStats(rows: readonly HistorySetRow[]): Map<string, W
   return result;
 }
 
+/**
+ * For each exercise, keeps the sets of its first block in the first workout seen.
+ * Rows must be sorted: newest workout first, then by exercise position and set index.
+ */
+export function pickLatestBlocks(
+  rows: readonly Omit<HistorySetRow, 'setIndex'>[],
+): Map<string, SetResult[]> {
+  const result = new Map<string, SetResult[]>();
+  const chosenBlock = new Map<string, string>();
+  for (const row of rows) {
+    const block = `${row.workoutId}:${row.exercisePosition}`;
+    const chosen = chosenBlock.get(row.exerciseId) ?? block;
+    chosenBlock.set(row.exerciseId, chosen);
+    if (chosen !== block) continue;
+    result.set(row.exerciseId, [...(result.get(row.exerciseId) ?? []), { weightKg: row.weightKg, reps: row.reps }]);
+  }
+  return result;
+}
+
 export type Section<T> = { key: string; title: string; data: T[] };
 
 function capitalize(text: string, language: string): string {

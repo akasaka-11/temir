@@ -14,10 +14,11 @@ type Props = {
   unit: WeightUnit;
   language: string;
   toggleLabel: string;
-  onChange: (patch: { weightText?: string; repsText?: string }) => void;
-  onToggle: () => void;
-  onLongPressIndex: () => void;
-  onUsePrevious: () => void;
+  // Handlers take ids so the parent can pass stable callbacks and memo works.
+  onChange: (setId: string, patch: { weightText?: string; repsText?: string }) => void;
+  onToggle: (setId: string, index: number) => void;
+  onLongPressIndex: (setId: string, index: number) => void;
+  onUsePrevious: (setId: string, index: number) => void;
 };
 
 export const SetRow = memo(function SetRow({
@@ -37,17 +38,17 @@ export const SetRow = memo(function SetRow({
 
   return (
     <View style={[styles.row, done && styles.rowDone]}>
-      <Pressable onLongPress={onLongPressIndex} style={styles.indexCell} hitSlop={4}>
+      <Pressable onLongPress={() => onLongPressIndex(set.id, index)} style={styles.indexCell} hitSlop={4}>
         <Text style={styles.index}>{index + 1}</Text>
       </Pressable>
-      <Pressable onPress={onUsePrevious} disabled={!previous || done} style={styles.previousCell}>
+      <Pressable onPress={() => onUsePrevious(set.id, index)} disabled={!previous || done} style={styles.previousCell}>
         <Text style={styles.previous} numberOfLines={1}>
           {previousText}
         </Text>
       </Pressable>
       <TextInput
         value={set.weightText}
-        onChangeText={(weightText) => onChange({ weightText })}
+        onChangeText={(weightText) => onChange(set.id, { weightText })}
         placeholder={previous ? weightToInput(previous.weightKg, unit) : '0'}
         placeholderTextColor={colors.textMuted}
         keyboardType="decimal-pad"
@@ -58,7 +59,7 @@ export const SetRow = memo(function SetRow({
       />
       <TextInput
         value={set.repsText}
-        onChangeText={(repsText) => onChange({ repsText })}
+        onChangeText={(repsText) => onChange(set.id, { repsText })}
         placeholder={previous ? String(previous.reps) : '0'}
         placeholderTextColor={colors.textMuted}
         keyboardType="number-pad"
@@ -71,7 +72,7 @@ export const SetRow = memo(function SetRow({
         accessibilityRole="checkbox"
         accessibilityState={{ checked: done }}
         accessibilityLabel={toggleLabel}
-        onPress={onToggle}
+        onPress={() => onToggle(set.id, index)}
         hitSlop={6}
         style={[styles.check, done && styles.checkDone]}
       >

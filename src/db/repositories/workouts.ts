@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 
 import type { CompletedSet } from '@/lib/activeWorkout';
-import type { HistorySetRow } from '@/lib/history';
+import { type HistorySetRow, pickLatestBlocks } from '@/lib/history';
 import { newId } from '@/lib/id';
 import { bestsOf, type ExerciseBests, type SetResult } from '@/lib/workoutMath';
 
@@ -16,6 +16,7 @@ function selectHistory(db: Database, exerciseIds: readonly string[]) {
     .select({
       workoutId: workoutSets.workoutId,
       exerciseId: workoutSets.exerciseId,
+      exercisePosition: workoutSets.exercisePosition,
       weightKg: workoutSets.weightKg,
       reps: workoutSets.reps,
     })
@@ -29,28 +30,20 @@ function selectHistory(db: Database, exerciseIds: readonly string[]) {
         finishedAndAlive,
       ),
     )
-    .orderBy(desc(workouts.startedAt), asc(workoutSets.setIndex))
+    .orderBy(desc(workouts.startedAt), asc(workoutSets.exercisePosition), asc(workoutSets.setIndex))
     .all();
 }
 
-/** Sets from the most recent finished workout that contains each exercise. */
+/**
+ * Sets from the most recent finished workout that contains each exercise.
+ * If the exercise was done in several blocks there, the first block is used.
+ */
 export function getPreviousSets(
   db: Database,
   exerciseIds: readonly string[],
 ): Map<string, SetResult[]> {
-  const result = new Map<string, SetResult[]>();
-  if (exerciseIds.length === 0) return result;
-
-  const latestWorkout = new Map<string, string>();
-  for (const row of selectHistory(db, exerciseIds)) {
-    const latest = latestWorkout.get(row.exerciseId) ?? row.workoutId;
-    latestWorkout.set(row.exerciseId, latest);
-    if (latest !== row.workoutId) continue;
-    const sets = result.get(row.exerciseId) ?? [];
-    sets.push({ weightKg: row.weightKg, reps: row.reps });
-    result.set(row.exerciseId, sets);
-  }
-  return result;
+  if (exerciseIds.length === 0) return new Map();
+  return pickLatestBlocks(selectHistory(db, exerciseIds));
 }
 
 /** All-time bests per exercise, used to detect new personal records. */
