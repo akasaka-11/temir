@@ -15,7 +15,6 @@
   "workout": {
     "defaultName": "Workout",
     "startTitle": "Ready to train?",
-    "startHint": "Start an empty workout and add exercises as you go.",
     "startEmpty": "Start empty workout",
     "completedSets_one": "{{count}} set done",
     "completedSets_other": "{{count}} sets done",
@@ -205,5 +204,31 @@
     "farmers_walk": "Farmer's Walk",
     "kettlebell_swing": "Kettlebell Swing",
     "clean_and_press": "Clean and Press (Barbell)"
+  },
+  "routines": {
+    "title": "Templates",
+    "new": "+ New",
+    "newTitle": "New template",
+    "editTitle": "Edit template",
+    "emptyHint": "Save your usual workouts as templates to start them in one tap.",
+    "noExercises": "No exercises yet",
+    "start": "Start",
+    "editHint": "Opens the template editor",
+    "name": "Name",
+    "namePlaceholder": "e.g. Push day",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional",
+    "exercises": "Exercises",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "fewerSets": "Fewer sets",
+    "moreSets": "More sets",
+    "delete": "Delete template",
+    "deleteTitle": "Delete template?",
+    "errors": {
+      "nameRequired": "Enter a name",
+      "nameTooLong": "Name must be at most {{max}} characters",
+      "noExercises": "Add at least one exercise"
+    }
   }
 }

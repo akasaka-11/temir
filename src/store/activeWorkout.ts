@@ -22,6 +22,12 @@ type ActiveWorkoutState = {
   summary: WorkoutSummary | null;
 
   start: (name: string, unit: WeightUnit, routineId?: string | null) => void;
+  startFromRoutine: (
+    name: string,
+    unit: WeightUnit,
+    routineId: string,
+    items: readonly { exerciseId: string; targetSets: number }[],
+  ) => void;
   addExercises: (exerciseIds: readonly string[]) => void;
   removeExercise: (rowId: string) => void;
   addSet: (rowId: string) => void;
@@ -52,6 +58,17 @@ export const useActiveWorkout = create<ActiveWorkoutState>()(
             workout: { id: newId(), name, startedAt: Date.now(), routineId, unit, exercises: [] },
             rest: null,
           }),
+        startFromRoutine: (name, unit, routineId, items) => {
+          const empty: ActiveWorkout = {
+            id: newId(),
+            name,
+            startedAt: Date.now(),
+            routineId,
+            unit,
+            exercises: [],
+          };
+          set({ workout: logic.addRoutineExercises(empty, items, newId), rest: null });
+        },
         addExercises: (ids) => update((w) => logic.addExercises(w, ids, newId)),
         removeExercise: (rowId) => update((w) => logic.removeExercise(w, rowId)),
         addSet: (rowId) => update((w) => logic.addSet(w, rowId, newId)),

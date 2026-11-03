@@ -68,6 +68,15 @@ export function addExercises(
   return { ...workout, exercises: [...workout.exercises, ...added] };
 }
 
+/** Adds exercises from a routine, each with its own number of empty sets. */
+export function addRoutineExercises(
+  workout: ActiveWorkout,
+  items: readonly { exerciseId: string; targetSets: number }[],
+  makeId: MakeId,
+): ActiveWorkout {
+  return items.reduce((w, item) => addExercises(w, [item.exerciseId], makeId, item.targetSets), workout);
+}
+
 export function removeExercise(workout: ActiveWorkout, rowId: string): ActiveWorkout {
   return { ...workout, exercises: workout.exercises.filter((exercise) => exercise.id !== rowId) };
 }

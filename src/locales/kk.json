@@ -15,7 +15,6 @@
   "workout": {
     "defaultName": "Жаттығу",
     "startTitle": "Жаттығуға дайынсыз ба?",
-    "startHint": "Бос жаттығуды бастап, жаттығуларды барысында қоса беріңіз.",
     "startEmpty": "Бос жаттығуды бастау",
     "completedSets_one": "{{count}} тәсіл орындалды",
     "completedSets_other": "{{count}} тәсіл орындалды",
@@ -205,5 +204,31 @@
     "farmers_walk": "Фермер жүрісі",
     "kettlebell_swing": "Гир сермеу",
     "clean_and_press": "Кеудеге алып, жоғары сығу"
+  },
+  "routines": {
+    "title": "Үлгілер",
+    "new": "+ Жаңа",
+    "newTitle": "Жаңа үлгі",
+    "editTitle": "Үлгіні өңдеу",
+    "emptyHint": "Әдеттегі жаттығуларыңызды үлгі ретінде сақтап, бір басумен бастаңыз.",
+    "noExercises": "Әзірге жаттығу жоқ",
+    "start": "Бастау",
+    "editHint": "Үлгі редакторын ашады",
+    "name": "Атауы",
+    "namePlaceholder": "Мысалы, Кеуде күні",
+    "notes": "Жазбалар",
+    "notesPlaceholder": "Міндетті емес",
+    "exercises": "Жаттығулар",
+    "moveUp": "Жоғары жылжыту",
+    "moveDown": "Төмен жылжыту",
+    "fewerSets": "Тәсілді азайту",
+    "moreSets": "Тәсілді көбейту",
+    "delete": "Үлгіні жою",
+    "deleteTitle": "Үлгіні жою керек пе?",
+    "errors": {
+      "nameRequired": "Атауын жазыңыз",
+      "nameTooLong": "Атауы {{max}} таңбадан аспауы керек",
+      "noExercises": "Кемінде бір жаттығу қосыңыз"
+    }
   }
 }

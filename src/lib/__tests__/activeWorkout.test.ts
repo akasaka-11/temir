@@ -1,6 +1,7 @@
 import {
   type ActiveWorkout,
   addExercises,
+  addRoutineExercises,
   addSet,
   collectCompletedSets,
   countCompletedSets,
@@ -33,6 +34,21 @@ describe('active workout transitions', () => {
     w = updateSet(w, row.id, row.sets[0]!.id, { weightText: '60', repsText: '8' });
     w = addSet(w, row.id, makeId);
     expect(w.exercises[0]!.sets[1]).toMatchObject({ weightText: '60', repsText: '8', isCompleted: false });
+  });
+
+  it('adds routine exercises with their target number of sets', () => {
+    const w = addRoutineExercises(
+      newWorkout(),
+      [
+        { exerciseId: 'bench', targetSets: 4 },
+        { exerciseId: 'row', targetSets: 2 },
+      ],
+      idFactory(),
+    );
+    expect(w.exercises.map((e) => [e.exerciseId, e.sets.length])).toEqual([
+      ['bench', 4],
+      ['row', 2],
+    ]);
   });
 
   it('removes sets and exercises', () => {
