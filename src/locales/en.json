@@ -1,0 +1,34 @@
+{
+  "tabs": {
+    "workout": "Workout",
+    "history": "History",
+    "exercises": "Exercises",
+    "profile": "Profile"
+  },
+  "workout": {
+    "emptyTitle": "No active workout",
+    "emptyHint": "Workout logging arrives in the next stages."
+  },
+  "history": {
+    "emptyTitle": "No workouts yet",
+    "emptyHint": "Your finished workouts will show up here."
+  },
+  "exercises": {
+    "emptyTitle": "Exercise library",
+    "emptyHint": "Exercises will show up here soon."
+  },
+  "profile": {
+    "settings": "Settings",
+    "language": "Language",
+    "languageHint": "Applied instantly, no restart needed."
+  },
+  "languages": {
+    "kk": "Қазақша",
+    "en": "English",
+    "ru": "Русский"
+  },
+  "units": {
+    "sets_one": "{{count}} set",
+    "sets_other": "{{count}} sets"
+  }
+}

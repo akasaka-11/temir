@@ -1,0 +1,46 @@
+{
+  "name": "strength-tracker",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
+    "expo": "~58.0.23",
+    "expo-constants": "~58.0.15",
+    "expo-font": "~58.0.11",
+    "expo-linking": "~58.0.16",
+    "expo-localization": "~58.0.5",
+    "expo-router": "~58.0.30",
+    "expo-sqlite": "~58.0.15",
+    "expo-status-bar": "~58.0.4",
+    "i18next": "^26.7.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-i18next": "^17.1.12",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "~5.11.1",
+    "react-native-screens": "~4.30.1",
+    "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+    "@types/react": "~19.3.0",
+    "typescript": "~6.0.3",
+    "@types/jest": "30.0.0",
+    "jest": "~30.5.2",
+    "jest-expo": "~58.0.14"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
+  },
+  "private": true,
+  "jest": {
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  }
+}

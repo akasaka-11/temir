@@ -1,0 +1,36 @@
+{
+  "tabs": {
+    "workout": "Тренировка",
+    "history": "История",
+    "exercises": "Упражнения",
+    "profile": "Профиль"
+  },
+  "workout": {
+    "emptyTitle": "Нет активной тренировки",
+    "emptyHint": "Запись тренировок появится на следующих этапах."
+  },
+  "history": {
+    "emptyTitle": "Тренировок пока нет",
+    "emptyHint": "Здесь появятся завершённые тренировки."
+  },
+  "exercises": {
+    "emptyTitle": "Библиотека упражнений",
+    "emptyHint": "Скоро здесь появятся упражнения."
+  },
+  "profile": {
+    "settings": "Настройки",
+    "language": "Язык",
+    "languageHint": "Меняется сразу, без перезапуска."
+  },
+  "languages": {
+    "kk": "Қазақша",
+    "en": "English",
+    "ru": "Русский"
+  },
+  "units": {
+    "sets_one": "{{count}} подход",
+    "sets_few": "{{count}} подхода",
+    "sets_many": "{{count}} подходов",
+    "sets_other": "{{count}} подхода"
+  }
+}
