@@ -30,6 +30,13 @@
 - Выбранный язык хранится в `expo-sqlite/kv-store` (синхронный key-value), ключ `settings.language`.
 - TypeScript 6 не подключает `@types/*` автоматически — нужные типы перечислены в `tsconfig.json` → `types`.
 - Ключи переводов типизированы (`src/i18n/i18next.d.ts`): опечатка в `t('...')` — ошибка TypeScript.
+- **БД:** drizzle-orm 0.45 (stable) + expo-sqlite. Схема — `src/db/schema.ts`, клиент — `src/db/client.ts` (foreign_keys ON, WAL).
+  - Изменил схему → `npm.cmd run db:generate -- --name <what_changed>` → коммитить сгенерированные файлы в `src/db/migrations/`. Руками миграции не править.
+  - Миграции применяются при старте в `DatabaseProvider` (`useMigrations`), потом `seedDatabase`.
+  - `.sql` импортируются строками: `babel-plugin-inline-import` (babel.config.js) + `sourceExts.push('sql')` (metro.config.js).
+  - Встроенные упражнения: `src/db/seed/exercises.ts`, id детерминированные (UUID от ключа) — **никогда не менять id**. Изменил список → увеличить `EXERCISE_SEED_VERSION` и добавить переводы `exerciseNames.<key>` во все языки (тест это проверяет).
+  - В `workout_sets` добавлено поле `exercise_position` (порядок упражнения в тренировке) — отклонение от исходной модели, согласовано в этапе 2.
+  - UUID для новых строк — `newId()` из `src/lib/id.ts` (expo-crypto).
 - Проверка переводов — Jest-тест `src/locales/__tests__/locales.test.ts` (одинаковые ключи, нет пустых строк, все формы множественного числа по `Intl.PluralRules`).
 
 ## Стек (не менять без согласования)
@@ -116,5 +123,5 @@ src/
 7. Прогресс и графики
 8. Настройки и полировка
 
-Текущий статус: этап 1 завершён и проверен на iPhone (каркас, табы, i18n). Следующий — этап 2.
+Текущий статус: этап 2 завершён (БД, миграции, 65 упражнений), ждёт проверки на iPhone. Следующий — этап 3.
 Открытые вопросы: финальное название приложения и bundle ID; казахские переводы — на ревью у пользователя.

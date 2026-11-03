@@ -3,6 +3,7 @@ import '@/i18n';
 import { DarkTheme, Stack, ThemeProvider, type Theme } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
+import { DatabaseProvider } from '@/db/DatabaseProvider';
 import { colors } from '@/theme';
 
 const navigationTheme: Theme = {
@@ -21,9 +22,11 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={navigationTheme}>
       <StatusBar style="light" />
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
+      <DatabaseProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </DatabaseProvider>
     </ThemeProvider>
   );
 }
