@@ -5,7 +5,8 @@ import * as schema from './schema';
 
 const DATABASE_NAME = 'strength-tracker.db';
 
-const sqlite = openDatabaseSync(DATABASE_NAME);
+// enableChangeListener lets useLiveQuery re-render screens when data changes.
+const sqlite = openDatabaseSync(DATABASE_NAME, { enableChangeListener: true });
 sqlite.execSync('PRAGMA foreign_keys = ON;');
 sqlite.execSync('PRAGMA journal_mode = WAL;');
 

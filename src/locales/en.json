@@ -1,4 +1,8 @@
 {
+  "common": {
+    "save": "Save",
+    "clear": "Clear"
+  },
   "tabs": {
     "workout": "Workout",
     "history": "History",
@@ -14,14 +18,32 @@
     "emptyHint": "Your finished workouts will show up here."
   },
   "exercises": {
-    "emptyHint": "Search and filters arrive in the next stage.",
-    "count_one": "{{count}} exercise in the library",
-    "count_other": "{{count}} exercises in the library"
+    "searchPlaceholder": "Search exercises",
+    "allMuscles": "All",
+    "noResults": "Nothing found",
+    "noResultsHint": "Try another search or add your own exercise with the + button.",
+    "custom": "Custom",
+    "add": "Add exercise"
+  },
+  "exerciseForm": {
+    "title": "New exercise",
+    "name": "Name",
+    "namePlaceholder": "e.g. Pullover",
+    "muscleGroup": "Muscle group",
+    "equipment": "Equipment",
+    "errors": {
+      "required": "Enter a name",
+      "tooLong": "Name must be at most {{max}} characters",
+      "muscleGroupRequired": "Pick a muscle group"
+    }
   },
   "profile": {
     "settings": "Settings",
     "language": "Language",
     "languageHint": "Applied instantly, no restart needed."
+  },
+  "database": {
+    "errorTitle": "Couldn't open the database"
   },
   "languages": {
     "kk": "Қазақша",
@@ -121,8 +143,5 @@
     "farmers_walk": "Farmer's Walk",
     "kettlebell_swing": "Kettlebell Swing",
     "clean_and_press": "Clean and Press (Barbell)"
-  },
-  "database": {
-    "errorTitle": "Couldn't open the database"
   }
 }

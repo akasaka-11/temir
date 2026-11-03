@@ -1,4 +1,8 @@
 {
+  "common": {
+    "save": "Сохранить",
+    "clear": "Очистить"
+  },
   "tabs": {
     "workout": "Тренировка",
     "history": "История",
@@ -14,16 +18,32 @@
     "emptyHint": "Здесь появятся завершённые тренировки."
   },
   "exercises": {
-    "emptyHint": "Поиск и фильтры появятся на следующем этапе.",
-    "count_one": "В библиотеке {{count}} упражнение",
-    "count_few": "В библиотеке {{count}} упражнения",
-    "count_many": "В библиотеке {{count}} упражнений",
-    "count_other": "В библиотеке {{count}} упражнения"
+    "searchPlaceholder": "Поиск упражнений",
+    "allMuscles": "Все",
+    "noResults": "Ничего не найдено",
+    "noResultsHint": "Измените запрос или добавьте своё упражнение кнопкой +.",
+    "custom": "Своё",
+    "add": "Добавить упражнение"
+  },
+  "exerciseForm": {
+    "title": "Новое упражнение",
+    "name": "Название",
+    "namePlaceholder": "Например, пуловер",
+    "muscleGroup": "Группа мышц",
+    "equipment": "Оборудование",
+    "errors": {
+      "required": "Введите название",
+      "tooLong": "Не больше {{max}} символов",
+      "muscleGroupRequired": "Выберите группу мышц"
+    }
   },
   "profile": {
     "settings": "Настройки",
     "language": "Язык",
     "languageHint": "Меняется сразу, без перезапуска."
+  },
+  "database": {
+    "errorTitle": "Не удалось открыть базу данных"
   },
   "languages": {
     "kk": "Қазақша",
@@ -125,8 +145,5 @@
     "farmers_walk": "Прогулка фермера",
     "kettlebell_swing": "Махи гирей",
     "clean_and_press": "Взятие на грудь и жим"
-  },
-  "database": {
-    "errorTitle": "Не удалось открыть базу данных"
   }
 }

@@ -1,4 +1,8 @@
 {
+  "common": {
+    "save": "Сақтау",
+    "clear": "Тазалау"
+  },
   "tabs": {
     "workout": "Жаттығу",
     "history": "Тарих",
@@ -14,14 +18,32 @@
     "emptyHint": "Аяқталған жаттығуларыңыз осында көрінеді."
   },
   "exercises": {
-    "emptyHint": "Іздеу мен сүзгілер келесі кезеңде қосылады.",
-    "count_one": "Кітапханада {{count}} жаттығу",
-    "count_other": "Кітапханада {{count}} жаттығу"
+    "searchPlaceholder": "Жаттығуларды іздеу",
+    "allMuscles": "Барлығы",
+    "noResults": "Ештеңе табылмады",
+    "noResultsHint": "Басқаша іздеп көріңіз немесе + батырмасымен өз жаттығуыңызды қосыңыз.",
+    "custom": "Өзімдікі",
+    "add": "Жаттығу қосу"
+  },
+  "exerciseForm": {
+    "title": "Жаңа жаттығу",
+    "name": "Атауы",
+    "namePlaceholder": "Мысалы, пуловер",
+    "muscleGroup": "Бұлшықет тобы",
+    "equipment": "Жабдық",
+    "errors": {
+      "required": "Атауын жазыңыз",
+      "tooLong": "Атауы {{max}} таңбадан аспауы керек",
+      "muscleGroupRequired": "Бұлшықет тобын таңдаңыз"
+    }
   },
   "profile": {
     "settings": "Баптаулар",
     "language": "Тіл",
     "languageHint": "Бірден ауысады, қайта іске қосудың қажеті жоқ."
+  },
+  "database": {
+    "errorTitle": "Дерекқорды ашу мүмкін болмады"
   },
   "languages": {
     "kk": "Қазақша",
@@ -121,8 +143,5 @@
     "farmers_walk": "Фермер жүрісі",
     "kettlebell_swing": "Гир сермеу",
     "clean_and_press": "Кеудеге алып, жоғары сығу"
-  },
-  "database": {
-    "errorTitle": "Дерекқорды ашу мүмкін болмады"
   }
 }

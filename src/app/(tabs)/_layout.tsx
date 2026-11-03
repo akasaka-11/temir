@@ -1,8 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Link } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
 import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import { colors } from '@/theme';
+import { Pressable, StyleSheet } from 'react-native';
+import { colors, spacing } from '@/theme';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -36,7 +38,22 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="exercises"
-        options={{ title: t('tabs.exercises'), tabBarIcon: tabIcon('list-outline') }}
+        options={{
+          title: t('tabs.exercises'),
+          tabBarIcon: tabIcon('list-outline'),
+          headerRight: () => (
+            <Link href="/exercise/new" asChild>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('exercises.add')}
+                hitSlop={12}
+                style={styles.headerButton}
+              >
+                <Ionicons name="add" size={28} color={colors.primary} />
+              </Pressable>
+            </Link>
+          ),
+        }}
       />
       <Tabs.Screen
         name="profile"
@@ -45,3 +62,7 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  headerButton: { marginRight: spacing.lg },
+});
