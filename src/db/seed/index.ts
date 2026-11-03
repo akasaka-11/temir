@@ -28,6 +28,7 @@ export function seedDatabase(db: Database): void {
           nameKey: sql`excluded.name_key`,
           muscleGroup: sql`excluded.muscle_group`,
           equipment: sql`excluded.equipment`,
+          kind: sql`excluded.kind`,
           updatedAt: sql`excluded.updated_at`,
         },
       })

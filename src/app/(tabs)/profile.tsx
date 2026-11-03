@@ -1,32 +1,32 @@
 import Constants from 'expo-constants';
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { OptionList } from '@/components/OptionList';
 import { StatGrid } from '@/components/StatGrid';
+import { db } from '@/db/client';
+import { deleteAllWorkouts } from '@/db/repositories/workouts';
 import { useWorkoutHistory } from '@/features/history/useWorkoutHistory';
+import { ProgressOverview } from '@/features/progress/ProgressOverview';
 import { computeOverallStats, REST_OPTIONS_SECONDS } from '@/lib/stats';
-import { formatWeight, type WeightUnit } from '@/lib/units';
+import type { WeightUnit } from '@/lib/units';
 import { formatDuration } from '@/lib/workoutMath';
 import { useSettings } from '@/store/settings';
 import { colors, spacing, typography } from '@/theme';
 
 export default function ProfileScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { unit, restSeconds, setUnit, setRestSeconds } = useSettings();
   const history = useWorkoutHistory();
 
   const stats = useMemo(
     () =>
       computeOverallStats(
-        history.map((h) => ({
-          startedAt: h.workout.startedAt,
-          setCount: h.stats.setCount,
-          volumeKg: h.stats.volumeKg,
-        })),
+        history.map((h) => ({ startedAt: h.workout.startedAt, setCount: h.stats.setCount })),
         Date.now(),
       ),
     [history],
@@ -36,10 +36,6 @@ export default function ProfileScreen() {
     { label: t('profile.stats.workouts'), value: String(stats.workouts) },
     { label: t('profile.stats.thisWeek'), value: String(stats.workoutsThisWeek) },
     { label: t('profile.stats.sets'), value: String(stats.totalSets) },
-    {
-      label: t('profile.stats.volume'),
-      value: `${formatWeight(stats.totalVolumeKg, unit, i18n.language)} ${t(`units.${unit}`)}`,
-    },
   ];
 
   const unitOptions: { value: WeightUnit; label: string }[] = [
@@ -47,10 +43,18 @@ export default function ProfileScreen() {
     { value: 'lb', label: t('profile.units.lb') },
   ];
 
+  function confirmClearHistory() {
+    Alert.alert(t('profile.clearHistoryTitle'), t('profile.clearHistoryBody', { count: stats.workouts }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('profile.clearHistoryConfirm'), style: 'destructive', onPress: () => deleteAllWorkouts(db) },
+    ]);
+  }
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{t('profile.statsTitle')}</Text>
       <StatGrid stats={tiles} />
+      {stats.workouts > 0 && <ProgressOverview history={history} />}
 
       <Text style={styles.title}>{t('profile.settings')}</Text>
 
@@ -79,6 +83,17 @@ export default function ProfileScreen() {
           ))}
         </View>
         <Text style={styles.hint}>{t('profile.restHint')}</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>{t('profile.data')}</Text>
+        <Button
+          label={t('profile.clearHistory')}
+          variant="danger"
+          icon="trash-outline"
+          onPress={confirmClearHistory}
+          disabled={stats.workouts === 0}
+        />
       </View>
 
       <Text style={styles.version}>

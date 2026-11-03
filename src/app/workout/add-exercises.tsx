@@ -6,8 +6,8 @@ import { useActiveWorkout } from '@/store/activeWorkout';
 export default function AddExercisesScreen() {
   return (
     <ExercisePicker
-      onConfirm={(ids) => {
-        useActiveWorkout.getState().addExercises(ids);
+      onConfirm={(picked) => {
+        useActiveWorkout.getState().addExercises(picked);
         router.back();
       }}
     />

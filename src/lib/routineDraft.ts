@@ -1,15 +1,35 @@
-import type { MakeId } from './activeWorkout';
+import type { ExerciseKind } from '@/db/schema';
 
-// Pure editing logic for a routine (workout template) before it is saved.
+import type { MakeId, NewActiveExercise, SetTexts } from './activeWorkout';
+import { distanceToInput, formatCardioDuration, parseDistanceKm, parseDuration } from './cardio';
+import { parseReps, parseWeight, toKg, type WeightUnit, weightToInput } from './units';
 
-export const MIN_TARGET_SETS = 1;
+// Routines (workout templates): pure editing logic and conversions.
+
 export const MAX_TARGET_SETS = 20;
 export const MAX_ROUTINE_NAME_LENGTH = 60;
+export const DEFAULT_STRENGTH_SETS = 3;
+
+/** A planned set as stored: every target is optional. Weight in kg. */
+export type TargetSet = {
+  weightKg: number | null;
+  reps: number | null;
+  durationSeconds: number | null;
+  distanceM: number | null;
+};
+
+export const EMPTY_TARGET: TargetSet = { weightKg: null, reps: null, durationSeconds: null, distanceM: null };
+
+/** A routine exercise with its planned sets, independent of the UI. */
+export type RoutineSpecItem = { exerciseId: string; kind: ExerciseKind; sets: TargetSet[] };
+
+export type DraftSet = SetTexts & { key: string };
 
 export type RoutineDraftItem = {
   key: string;
   exerciseId: string;
-  targetSets: number;
+  kind: ExerciseKind;
+  sets: DraftSet[];
 };
 
 export type RoutineDraft = {
@@ -20,21 +40,32 @@ export type RoutineDraft = {
   items: RoutineDraftItem[];
 };
 
-export const DEFAULT_TARGET_SETS = 3;
-
 export function emptyDraft(): RoutineDraft {
   return { id: null, name: '', notes: '', items: [] };
 }
 
+const emptyTexts = (key: string): DraftSet => ({
+  key,
+  weightText: '',
+  repsText: '',
+  durationText: '',
+  distanceText: '',
+});
+
+function mapItem(draft: RoutineDraft, itemKey: string, fn: (item: RoutineDraftItem) => RoutineDraftItem) {
+  return { ...draft, items: draft.items.map((item) => (item.key === itemKey ? fn(item) : item)) };
+}
+
 export function addDraftExercises(
   draft: RoutineDraft,
-  exerciseIds: readonly string[],
+  entries: readonly { exerciseId: string; kind: ExerciseKind }[],
   makeId: MakeId,
 ): RoutineDraft {
-  const added = exerciseIds.map((exerciseId) => ({
+  const added = entries.map(({ exerciseId, kind }) => ({
     key: makeId(),
     exerciseId,
-    targetSets: DEFAULT_TARGET_SETS,
+    kind,
+    sets: Array.from({ length: kind === 'cardio' ? 1 : DEFAULT_STRENGTH_SETS }, () => emptyTexts(makeId())),
   }));
   return { ...draft, items: [...draft.items, ...added] };
 }
@@ -54,21 +85,114 @@ export function moveDraftItem(draft: RoutineDraft, key: string, direction: -1 | 
   return { ...draft, items };
 }
 
-export function setDraftTargetSets(draft: RoutineDraft, key: string, targetSets: number): RoutineDraft {
-  const clamped = Math.min(MAX_TARGET_SETS, Math.max(MIN_TARGET_SETS, Math.round(targetSets)));
+/** Adds a set copying the last one's targets (max 20 sets). */
+export function addDraftSet(draft: RoutineDraft, itemKey: string, makeId: MakeId): RoutineDraft {
+  return mapItem(draft, itemKey, (item) => {
+    if (item.sets.length >= MAX_TARGET_SETS) return item;
+    const last = item.sets[item.sets.length - 1];
+    return { ...item, sets: [...item.sets, last ? { ...last, key: makeId() } : emptyTexts(makeId())] };
+  });
+}
+
+/** Removes a set; an exercise always keeps at least one. */
+export function removeDraftSet(draft: RoutineDraft, itemKey: string, setKey: string): RoutineDraft {
+  return mapItem(draft, itemKey, (item) =>
+    item.sets.length <= 1 ? item : { ...item, sets: item.sets.filter((s) => s.key !== setKey) },
+  );
+}
+
+export function updateDraftSet(
+  draft: RoutineDraft,
+  itemKey: string,
+  setKey: string,
+  patch: Partial<SetTexts>,
+): RoutineDraft {
+  return mapItem(draft, itemKey, (item) => ({
+    ...item,
+    sets: item.sets.map((s) => (s.key === setKey ? { ...s, ...patch } : s)),
+  }));
+}
+
+/** Parses typed targets. Empty fields are allowed (no target); invalid text returns null. */
+export function parseTargetSet(texts: Partial<SetTexts>, kind: ExerciseKind, unit: WeightUnit): TargetSet | null {
+  const filled = (t: string | undefined) => (t ?? '').trim() !== '';
+  if (kind === 'cardio') {
+    const duration = filled(texts.durationText) ? parseDuration(texts.durationText!) : undefined;
+    const distanceKm = parseDistanceKm(texts.distanceText ?? '');
+    if (duration === null || distanceKm === null) return null;
+    return {
+      ...EMPTY_TARGET,
+      durationSeconds: duration ?? null,
+      distanceM: distanceKm === undefined ? null : Math.round(distanceKm * 1000),
+    };
+  }
+  const weight = filled(texts.weightText) ? parseWeight(texts.weightText!, unit) : undefined;
+  const reps = filled(texts.repsText) ? parseReps(texts.repsText!) : undefined;
+  if (weight === null || reps === null || reps === 0) return null;
   return {
-    ...draft,
-    items: draft.items.map((item) => (item.key === key ? { ...item, targetSets: clamped } : item)),
+    ...EMPTY_TARGET,
+    weightKg: weight === undefined ? null : toKg(weight, unit),
+    reps: reps ?? null,
   };
 }
 
-export type RoutineDraftError = 'nameRequired' | 'nameTooLong' | 'noExercises';
+/** Stored targets -> input texts in the given unit (empty where there is no target). */
+export function targetToTexts(target: TargetSet, unit: WeightUnit): SetTexts {
+  return {
+    weightText: target.weightKg === null ? '' : weightToInput(target.weightKg, unit),
+    repsText: target.reps === null ? '' : String(target.reps),
+    durationText: target.durationSeconds === null ? '' : formatCardioDuration(target.durationSeconds),
+    distanceText: target.distanceM === null ? '' : distanceToInput(target.distanceM),
+  };
+}
 
-export function validateDraft(draft: RoutineDraft): RoutineDraftError[] {
+export type RoutineDraftError = 'nameRequired' | 'nameTooLong' | 'noExercises' | 'invalidSet';
+
+export function validateDraft(draft: RoutineDraft, unit: WeightUnit): RoutineDraftError[] {
   const errors: RoutineDraftError[] = [];
   const name = draft.name.trim();
   if (name.length === 0) errors.push('nameRequired');
   if (name.length > MAX_ROUTINE_NAME_LENGTH) errors.push('nameTooLong');
   if (draft.items.length === 0) errors.push('noExercises');
+  const invalid = draft.items.some((item) => item.sets.some((s) => !parseTargetSet(s, item.kind, unit)));
+  if (invalid) errors.push('invalidSet');
   return errors;
 }
+
+/** Draft -> storable items (call after validateDraft passed). */
+export function draftToSpec(draft: RoutineDraft, unit: WeightUnit): RoutineSpecItem[] {
+  return draft.items.map((item) => ({
+    exerciseId: item.exerciseId,
+    kind: item.kind,
+    sets: item.sets.map((s) => parseTargetSet(s, item.kind, unit) ?? EMPTY_TARGET),
+  }));
+}
+
+export function specToDraftItems(items: readonly RoutineSpecItem[], unit: WeightUnit, makeId: MakeId) {
+  return items.map((item) => ({
+    key: makeId(),
+    exerciseId: item.exerciseId,
+    kind: item.kind,
+    sets: item.sets.map((target) => ({ key: makeId(), ...targetToTexts(target, unit) })),
+  }));
+}
+
+/** Routine -> exercises for a new workout, with targets prefilled in the workout's unit. */
+export function specToWorkoutEntries(items: readonly RoutineSpecItem[], unit: WeightUnit): NewActiveExercise[] {
+  return items.map((item) => ({
+    exerciseId: item.exerciseId,
+    kind: item.kind,
+    sets: item.sets.map((target) => targetToTexts(target, unit)),
+  }));
+}
+
+/** Short summary for cards, e.g. "3 × 8–10" (reps range of the planned sets). */
+export function describeTargets(sets: readonly TargetSet[]): { count: number; repsMin: number | null; repsMax: number | null } {
+  const reps = sets.map((s) => s.reps).filter((r): r is number => r !== null);
+  return {
+    count: sets.length,
+    repsMin: reps.length ? Math.min(...reps) : null,
+    repsMax: reps.length ? Math.max(...reps) : null,
+  };
+}
+

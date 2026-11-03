@@ -37,7 +37,8 @@
     "columns": {
       "set": "Set",
       "previous": "Previous",
-      "reps": "Reps"
+      "reps": "Reps",
+      "time": "Time"
     },
     "saveErrorTitle": "Couldn't save the workout"
   },
@@ -60,7 +61,9 @@
   "records": {
     "weight": "Heaviest weight",
     "oneRepMax": "Best estimated 1RM",
-    "volume": "Best set volume"
+    "volume": "Best set volume",
+    "duration": "Longest session",
+    "distance": "Longest distance"
   },
   "history": {
     "emptyTitle": "No workouts yet",
@@ -72,7 +75,7 @@
     "deleteTitle": "Delete workout?",
     "deleteBody": "It will disappear from history and stop counting towards records.",
     "columns": {
-      "result": "Weight × reps",
+      "result": "Result",
       "oneRepMax": "Est. 1RM"
     }
   },
@@ -104,8 +107,7 @@
     "stats": {
       "workouts": "Workouts",
       "thisWeek": "This week",
-      "sets": "Sets",
-      "volume": "Total volume"
+      "sets": "Sets"
     },
     "unit": "Weight unit",
     "units": {
@@ -116,7 +118,21 @@
     "rest": "Default rest timer",
     "restOff": "Off",
     "restHint": "Starts automatically after you tick a set.",
-    "version": "Version {{version}}"
+    "version": "Version {{version}}",
+    "data": "Data",
+    "clearHistory": "Clear workout history",
+    "clearHistoryTitle": "Clear workout history?",
+    "clearHistoryBody_one": "{{count}} workout will be deleted. Templates and exercises stay.",
+    "clearHistoryBody_other": "{{count}} workouts will be deleted. Templates and exercises stay.",
+    "clearHistoryConfirm": "Clear",
+    "progress": {
+      "perWeek_one": "Workouts per week, last {{count}} week",
+      "perWeek_other": "Workouts per week, last {{count}} weeks",
+      "thisWeek": "This week",
+      "topExercises": "Most trained exercises",
+      "sessions_one": "{{count}} workout",
+      "sessions_other": "{{count}} workouts"
+    }
   },
   "database": {
     "errorTitle": "Couldn't open the database"
@@ -130,7 +146,8 @@
     "kg": "kg",
     "lb": "lb",
     "sets_one": "{{count}} set",
-    "sets_other": "{{count}} sets"
+    "sets_other": "{{count}} sets",
+    "km": "km"
   },
   "muscleGroups": {
     "chest": "Chest",
@@ -144,7 +161,8 @@
     "glutes": "Glutes",
     "calves": "Calves",
     "abs": "Abs",
-    "full_body": "Full body"
+    "full_body": "Full body",
+    "cardio": "Cardio"
   },
   "equipment": {
     "barbell": "Barbell",
@@ -220,17 +238,24 @@
     "wrist_curl": "Wrist Curl (Dumbbell)",
     "farmers_walk": "Farmer's Walk",
     "kettlebell_swing": "Kettlebell Swing",
-    "clean_and_press": "Clean and Press (Barbell)"
+    "clean_and_press": "Clean and Press (Barbell)",
+    "treadmill_run": "Running (Treadmill)",
+    "outdoor_run": "Running (Outdoor)",
+    "incline_walk": "Incline Walk (Treadmill)",
+    "stationary_bike": "Cycling (Stationary Bike)",
+    "rowing_machine": "Rowing Machine",
+    "elliptical": "Elliptical",
+    "stair_climber": "Stair Climber",
+    "jump_rope": "Jump Rope",
+    "swimming": "Swimming"
   },
   "routines": {
-    "title": "Templates",
     "new": "+ New",
     "newTitle": "New template",
     "editTitle": "Edit template",
     "emptyHint": "Save your usual workouts as templates to start them in one tap.",
     "noExercises": "No exercises yet",
     "start": "Start",
-    "editHint": "Opens the template editor",
     "name": "Name",
     "namePlaceholder": "e.g. Push day",
     "notes": "Notes",
@@ -238,15 +263,19 @@
     "exercises": "Exercises",
     "moveUp": "Move up",
     "moveDown": "Move down",
-    "fewerSets": "Fewer sets",
-    "moreSets": "More sets",
     "delete": "Delete template",
     "deleteTitle": "Delete template?",
     "errors": {
       "nameRequired": "Enter a name",
       "nameTooLong": "Name must be at most {{max}} characters",
-      "noExercises": "Add at least one exercise"
-    }
+      "noExercises": "Add at least one exercise",
+      "invalidSet": "Check the highlighted values"
+    },
+    "edit": "Edit",
+    "copy": "Save to my templates",
+    "more": "More actions",
+    "setsHint": "Targets are optional: leave a field empty to decide during the workout.",
+    "myTitle": "My templates"
   },
   "progress": {
     "notFound": "Exercise not found",
@@ -259,7 +288,46 @@
     "metrics": {
       "oneRepMax": "Est. 1RM",
       "maxWeight": "Max weight",
-      "volume": "Volume"
+      "volume": "Volume",
+      "duration": "Time",
+      "distance": "Distance"
+    }
+  },
+  "templates": {
+    "browse": "Ready-made workouts & programs",
+    "browseHint": "Push / Pull / Legs, chest day, cardio and more",
+    "title": "Ready-made",
+    "programsTitle": "Programs",
+    "workoutsTitle": "One-day workouts",
+    "day": "Day {{number}}",
+    "copied": "Saved to My templates",
+    "workouts": {
+      "chest_day": "Chest day",
+      "back_day": "Back day",
+      "leg_day": "Leg day",
+      "shoulder_day": "Shoulder day",
+      "arm_day": "Arm day",
+      "full_body": "Full body",
+      "cardio": "Cardio",
+      "push": "Push",
+      "pull": "Pull",
+      "legs": "Legs",
+      "upper": "Upper body",
+      "lower": "Lower body"
+    },
+    "programs": {
+      "ppl": {
+        "name": "Push / Pull / Legs",
+        "description": "3 days: pressing, pulling and legs. Repeat once or twice a week."
+      },
+      "upper_lower": {
+        "name": "Upper / Lower",
+        "description": "2 days: upper and lower body, 4 workouts a week."
+      },
+      "bro_split": {
+        "name": "Body-part split",
+        "description": "5 days: one muscle group per day."
+      }
     }
   }
 }

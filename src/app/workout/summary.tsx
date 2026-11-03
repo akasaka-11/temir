@@ -7,7 +7,7 @@ import { Button } from '@/components/Button';
 import { StatGrid } from '@/components/StatGrid';
 import { useExerciseNames } from '@/features/exercises/useExerciseNames';
 import { buildWorkoutStatTiles } from '@/features/workout/statTiles';
-import { formatWeight } from '@/lib/units';
+import { formatRecordValue } from '@/features/workout/formatSet';
 import { useActiveWorkout } from '@/store/activeWorkout';
 import { useSettings } from '@/store/settings';
 import { colors, radius, spacing, typography } from '@/theme';
@@ -49,7 +49,7 @@ export default function WorkoutSummaryScreen() {
                 <Text style={styles.muted}>{t(`records.${record.type}`)}</Text>
               </View>
               <Text style={styles.recordValue}>
-                {formatWeight(record.valueKg, unit, i18n.language)} {t(`units.${unit}`)}
+                {formatRecordValue(record.type, record.value, unit, i18n.language, t)}
               </Text>
             </View>
           ))

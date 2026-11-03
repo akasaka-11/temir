@@ -5,33 +5,53 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
 import { db } from '@/db/client';
-import { deleteRoutine, loadRoutineDraft, saveRoutine } from '@/db/repositories/routines';
+import { deleteRoutine, getRoutine, getRoutineSpecs, saveRoutine } from '@/db/repositories/routines';
 import { useExerciseNames } from '@/features/exercises/useExerciseNames';
-import { RoutineItemRow } from '@/features/routines/RoutineItemRow';
-import { emptyDraft, MAX_ROUTINE_NAME_LENGTH, type RoutineDraftError, validateDraft } from '@/lib/routineDraft';
+import { RoutineExerciseEditor } from '@/features/routines/RoutineExerciseEditor';
+import { newId } from '@/lib/id';
+import {
+  draftToSpec,
+  emptyDraft,
+  MAX_ROUTINE_NAME_LENGTH,
+  type RoutineDraft,
+  type RoutineDraftError,
+  specToDraftItems,
+  validateDraft,
+} from '@/lib/routineDraft';
+import type { WeightUnit } from '@/lib/units';
 import { useRoutineDraft } from '@/store/routineDraft';
+import { useSettings } from '@/store/settings';
 import { colors, radius, spacing, typography } from '@/theme';
+
+function loadDraft(id: string, unit: WeightUnit): RoutineDraft {
+  const routine = getRoutine(db, id);
+  if (!routine) return emptyDraft();
+  const items = getRoutineSpecs(db, [id]).get(id) ?? [];
+  return { id, name: routine.name, notes: routine.notes ?? '', items: specToDraftItems(items, unit, newId) };
+}
 
 export default function RoutineEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
   const { t } = useTranslation();
   const names = useExerciseNames();
+  const unit = useSettings((state) => state.unit);
   const draft = useRoutineDraft((state) => state.draft);
   const actions = useRoutineDraft.getState();
   const [errors, setErrors] = useState<RoutineDraftError[]>([]);
 
   // Load once per opened routine; the exercise picker edits the same draft afterwards.
   useEffect(() => {
-    useRoutineDraft.getState().load(isNew ? emptyDraft() : (loadRoutineDraft(db, id) ?? emptyDraft()));
+    useRoutineDraft.getState().load(isNew ? emptyDraft() : loadDraft(id, unit));
     setErrors([]);
+    // unit is read once on open (it cannot change while the editor is open).
   }, [id, isNew]);
 
   function save() {
-    const found = validateDraft(draft);
+    const found = validateDraft(draft, unit);
     setErrors(found);
     if (found.length > 0) return;
-    saveRoutine(db, draft);
+    saveRoutine(db, { id: draft.id, name: draft.name, notes: draft.notes, items: draftToSpec(draft, unit) });
     router.back();
   }
 
@@ -99,18 +119,18 @@ export default function RoutineEditorScreen() {
         <View style={styles.field}>
           <Text style={styles.label}>{t('routines.exercises')}</Text>
           {draft.items.map((item, index) => (
-            <RoutineItemRow
+            <RoutineExerciseEditor
               key={item.key}
               item={item}
               name={names.get(item.exerciseId) ?? ''}
+              unit={unit}
               isFirst={index === 0}
               isLast={index === draft.items.length - 1}
-              onMove={(direction) => actions.move(item.key, direction)}
-              onSetsChange={(sets) => actions.setTargetSets(item.key, sets)}
-              onRemove={() => actions.remove(item.key)}
             />
           ))}
+          {draft.items.length > 0 && <Text style={styles.hint}>{t('routines.setsHint')}</Text>}
           {errors.includes('noExercises') && <Text style={styles.error}>{t('routines.errors.noExercises')}</Text>}
+          {errors.includes('invalidSet') && <Text style={styles.error}>{t('routines.errors.invalidSet')}</Text>}
           <Button
             label={t('workout.addExercises')}
             icon="add"
@@ -145,4 +165,5 @@ const styles = StyleSheet.create({
   notes: { minHeight: 80, textAlignVertical: 'top' },
   inputError: { borderColor: colors.danger },
   error: { ...typography.caption, color: colors.danger },
+  hint: { ...typography.caption, color: colors.textMuted },
 });

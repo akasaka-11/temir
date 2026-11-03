@@ -11,19 +11,21 @@ import { db } from '@/db/client';
 import { getExercise } from '@/db/repositories/exercises';
 import { getExerciseHistory, selectFinishedWorkouts } from '@/db/repositories/workouts';
 import { useExerciseNames } from '@/features/exercises/useExerciseNames';
+import { formatRecordValue, formatSetResult } from '@/features/workout/formatSet';
 import { formatWorkoutDate } from '@/lib/history';
 import {
   buildProgressPoints,
+  CARDIO_METRICS,
   computeRecords,
   metricValue,
   type ProgressMetric,
   type RecordEntry,
+  STRENGTH_METRICS,
 } from '@/lib/progress';
-import { formatWeight } from '@/lib/units';
+import type { RecordType } from '@/lib/workoutMath';
 import { useSettings } from '@/store/settings';
 import { colors, radius, spacing, typography } from '@/theme';
 
-const METRICS: ProgressMetric[] = ['oneRepMax', 'maxWeight', 'volume'];
 const RECENT_SESSIONS = 10;
 
 export default function ExerciseProgressScreen() {
@@ -32,7 +34,7 @@ export default function ExerciseProgressScreen() {
   const lang = i18n.language;
   const unit = useSettings((state) => state.unit);
   const names = useExerciseNames();
-  const [metric, setMetric] = useState<ProgressMetric>('oneRepMax');
+  const [chosenMetric, setMetric] = useState<ProgressMetric | null>(null);
 
   // Re-read when workouts are saved or deleted.
   const { data: workouts } = useLiveQuery(selectFinishedWorkouts(db));
@@ -41,20 +43,29 @@ export default function ExerciseProgressScreen() {
   const points = useMemo(() => buildProgressPoints(rows), [rows]);
   const records = useMemo(() => computeRecords(rows), [rows]);
 
-  const unitLabel = t(`units.${unit}`);
-  const weight = (kg: number) => `${formatWeight(kg, unit, lang)} ${unitLabel}`;
   const title = names.get(id) ?? '';
 
   if (!exercise) {
     return <EmptyState icon="alert-circle-outline" title={t('progress.notFound')} hint="" />;
   }
 
-  const recordRows: { label: string; entry: RecordEntry | null; showSet: boolean }[] = [
-    { label: t('records.weight'), entry: records.maxWeight, showSet: true },
-    { label: t('records.oneRepMax'), entry: records.bestOneRepMax, showSet: true },
-    { label: t('records.volume'), entry: records.bestSetVolume, showSet: true },
-    { label: t('progress.bestWorkoutVolume'), entry: records.bestWorkoutVolume, showSet: false },
-  ];
+  const isCardio = exercise.kind === 'cardio';
+  const metrics = isCardio ? CARDIO_METRICS : STRENGTH_METRICS;
+  const metric = chosenMetric && metrics.includes(chosenMetric) ? chosenMetric : metrics[0]!;
+
+  // type decides how the value is formatted (kg, time or km).
+  const recordRows: { label: string; entry: RecordEntry | null; type: RecordType; showSet: boolean }[] = isCardio
+    ? [
+        { label: t('records.duration'), entry: records.longestDuration, type: 'duration', showSet: false },
+        { label: t('records.distance'), entry: records.longestDistance, type: 'distance', showSet: false },
+      ]
+    : [
+        { label: t('records.weight'), entry: records.maxWeight, type: 'weight', showSet: true },
+        { label: t('records.oneRepMax'), entry: records.bestOneRepMax, type: 'oneRepMax', showSet: true },
+        { label: t('records.volume'), entry: records.bestSetVolume, type: 'volume', showSet: true },
+        { label: t('progress.bestWorkoutVolume'), entry: records.bestWorkoutVolume, type: 'volume', showSet: false },
+      ];
+  const chartType: RecordType = metric === 'duration' ? 'duration' : metric === 'distance' ? 'distance' : 'weight';
 
   const first = points[0];
   const last = points[points.length - 1];
@@ -74,25 +85,27 @@ export default function ExerciseProgressScreen() {
         <>
           <Text style={styles.section}>{t('progress.records')}</Text>
           <View style={styles.card}>
-            {recordRows.map(({ label, entry, showSet }) => (
+            {recordRows.map(({ label, entry, type, showSet }) => (
               <View key={label} style={styles.recordRow}>
                 <View style={styles.recordText}>
                   <Text style={styles.recordLabel}>{label}</Text>
                   {entry && (
                     <Text style={styles.muted}>
                       {formatWorkoutDate(entry.date, lang)}
-                      {showSet && entry.set ? ` · ${weight(entry.set.weightKg)} × ${entry.set.reps}` : ''}
+                      {showSet && entry.set ? ` · ${formatSetResult(entry.set, 'strength', unit, lang, t)}` : ''}
                     </Text>
                   )}
                 </View>
-                <Text style={styles.recordValue}>{entry ? weight(entry.valueKg) : '—'}</Text>
+                <Text style={styles.recordValue}>
+                  {entry ? formatRecordValue(type, entry.value, unit, lang, t) : '—'}
+                </Text>
               </View>
             ))}
           </View>
 
           <Text style={styles.section}>{t('progress.chart')}</Text>
           <View style={styles.chips}>
-            {METRICS.map((m) => (
+            {metrics.map((m) => (
               <Chip key={m} label={t(`progress.metrics.${m}`)} selected={metric === m} onPress={() => setMetric(m)} />
             ))}
           </View>
@@ -102,7 +115,7 @@ export default function ExerciseProgressScreen() {
             ) : (
               <LineChart
                 values={points.map((p) => metricValue(p, metric))}
-                formatValue={weight}
+                formatValue={(value) => formatRecordValue(chartType, value, unit, lang, t)}
                 startLabel={formatWorkoutDate(first.date, lang)}
                 endLabel={formatWorkoutDate(last.date, lang)}
               />
@@ -121,7 +134,15 @@ export default function ExerciseProgressScreen() {
                     <Text style={styles.muted}>{t('units.sets', { count: p.setCount })}</Text>
                   </View>
                   <Text style={styles.sessionValue}>
-                    {weight(p.bestSet.weightKg)} × {p.bestSet.reps}
+                    {isCardio
+                      ? formatSetResult(
+                          { weightKg: 0, reps: 0, durationSeconds: p.durationSeconds, distanceM: p.distanceM },
+                          'cardio',
+                          unit,
+                          lang,
+                          t,
+                        )
+                      : formatSetResult(p.bestSet, 'strength', unit, lang, t)}
                   </Text>
                 </View>
               ))}

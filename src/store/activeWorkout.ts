@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import * as logic from '@/lib/activeWorkout';
-import type { ActiveWorkout, SetFallback } from '@/lib/activeWorkout';
+import type { ActiveWorkout, NewActiveExercise, SetFallback, SetTexts } from '@/lib/activeWorkout';
 import { newId } from '@/lib/id';
 import type { WeightUnit } from '@/lib/units';
 import type { WorkoutSummary } from '@/features/workout/finishWorkout';
@@ -21,18 +21,18 @@ type ActiveWorkoutState = {
   /** Result of the last finished workout, shown on the summary screen (not persisted). */
   summary: WorkoutSummary | null;
 
-  start: (name: string, unit: WeightUnit, routineId?: string | null) => void;
-  startFromRoutine: (
+  /** Starts a workout, optionally prefilled (e.g. from a template). */
+  start: (
     name: string,
     unit: WeightUnit,
-    routineId: string,
-    items: readonly { exerciseId: string; targetSets: number }[],
+    routineId?: string | null,
+    exercises?: readonly NewActiveExercise[],
   ) => void;
-  addExercises: (exerciseIds: readonly string[]) => void;
+  addExercises: (entries: readonly NewActiveExercise[]) => void;
   removeExercise: (rowId: string) => void;
   addSet: (rowId: string) => void;
   removeSet: (rowId: string, setId: string) => void;
-  updateSet: (rowId: string, setId: string, patch: { weightText?: string; repsText?: string }) => void;
+  updateSet: (rowId: string, setId: string, patch: Partial<SetTexts>) => void;
   /** Returns true when the set became completed, false when un-completed, null when invalid. */
   toggleSet: (rowId: string, setId: string, fallback?: SetFallback) => boolean | null;
   setRest: (rest: RestTimer | null) => void;
@@ -53,23 +53,11 @@ export const useActiveWorkout = create<ActiveWorkoutState>()(
         rest: null,
         summary: null,
 
-        start: (name, unit, routineId = null) =>
-          set({
-            workout: { id: newId(), name, startedAt: Date.now(), routineId, unit, exercises: [] },
-            rest: null,
-          }),
-        startFromRoutine: (name, unit, routineId, items) => {
-          const empty: ActiveWorkout = {
-            id: newId(),
-            name,
-            startedAt: Date.now(),
-            routineId,
-            unit,
-            exercises: [],
-          };
-          set({ workout: logic.addRoutineExercises(empty, items, newId), rest: null });
+        start: (name, unit, routineId = null, exercises = []) => {
+          const empty: ActiveWorkout = { id: newId(), name, startedAt: Date.now(), routineId, unit, exercises: [] };
+          set({ workout: logic.addExercises(empty, exercises, newId), rest: null });
         },
-        addExercises: (ids) => update((w) => logic.addExercises(w, ids, newId)),
+        addExercises: (entries) => update((w) => logic.addExercises(w, entries, newId)),
         removeExercise: (rowId) => update((w) => logic.removeExercise(w, rowId)),
         addSet: (rowId) => update((w) => logic.addSet(w, rowId, newId)),
         removeSet: (rowId, setId) => update((w) => logic.removeSet(w, rowId, setId)),

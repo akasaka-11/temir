@@ -1,14 +1,17 @@
-// Dark-first design tokens. Keep all colors/spacing here, never inline in components.
+// Monochrome (black & white) design tokens. Keep all colors/spacing here, never inline in components.
+// Red is kept only for destructive actions and errors, so they stay recognizable.
 export const colors = {
-  background: '#0B0B0F',
-  surface: '#16161D',
-  surfaceElevated: '#1F1F28',
-  border: '#2A2A35',
-  text: '#F5F5F7',
-  textMuted: '#9A9AA8',
-  primary: '#4F8CFF',
-  primaryText: '#FFFFFF',
-  success: '#34C759',
+  background: '#000000',
+  surface: '#121212',
+  surfaceElevated: '#1E1E1E',
+  border: '#2C2C2C',
+  text: '#FFFFFF',
+  textMuted: '#8E8E8E',
+  primary: '#FFFFFF',
+  primaryText: '#000000',
+  success: '#FFFFFF',
+  /** Background of a completed set row. */
+  completedRow: 'rgba(255, 255, 255, 0.08)',
   danger: '#FF453A',
 } as const;
 

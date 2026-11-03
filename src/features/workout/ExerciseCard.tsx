@@ -1,17 +1,18 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
-import type { ActiveExercise, SetFallback } from '@/lib/activeWorkout';
-import { type WeightUnit, weightToInput } from '@/lib/units';
+import type { ActiveExercise, SetTexts } from '@/lib/activeWorkout';
+import type { WeightUnit } from '@/lib/units';
 import type { SetResult } from '@/lib/workoutMath';
 import { useActiveWorkout } from '@/store/activeWorkout';
 import { useSettings } from '@/store/settings';
 import { colors, radius, spacing, typography } from '@/theme';
 
+import { formatSetResult, setToFallback } from './formatSet';
 import { SET_COLUMNS, SetRow } from './SetRow';
 import { useRestTimer } from './useRestTimer';
 
@@ -22,10 +23,6 @@ type Props = {
   unit: WeightUnit;
 };
 
-function toFallback(previous: SetResult | undefined, unit: WeightUnit): SetFallback | undefined {
-  return previous ? { weightText: weightToInput(previous.weightKg, unit), repsText: String(previous.reps) } : undefined;
-}
-
 // Store actions never change, so reading them once keeps callbacks stable.
 const actions = useActiveWorkout.getState();
 
@@ -35,15 +32,26 @@ export const ExerciseCard = memo(function ExerciseCard({ row, name, previousSets
   const restSeconds = useSettings((state) => state.restSeconds);
   const { start: startRest } = useRestTimer();
   const rowId = row.id;
+  const kind = row.kind ?? 'strength';
+
+  // Per-set "last time" values, memoized so SetRow props stay referentially stable.
+  const fallbacks = useMemo(
+    () => (previousSets ?? []).map((p) => setToFallback(p, kind, unit)),
+    [previousSets, kind, unit],
+  );
+  const previousTexts = useMemo(
+    () => (previousSets ?? []).map((p) => formatSetResult(p, kind, unit, i18n.language, t)),
+    [previousSets, kind, unit, i18n.language, t],
+  );
 
   const handleChange = useCallback(
-    (setId: string, patch: { weightText?: string; repsText?: string }) => actions.updateSet(rowId, setId, patch),
+    (setId: string, patch: Partial<SetTexts>) => actions.updateSet(rowId, setId, patch),
     [rowId],
   );
 
   const handleToggle = useCallback(
     (setId: string, index: number) => {
-      const result = actions.toggleSet(rowId, setId, toFallback(previousSets?.[index], unit));
+      const result = actions.toggleSet(rowId, setId, fallbacks[index]);
       if (result === null) {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         return;
@@ -53,7 +61,7 @@ export const ExerciseCard = memo(function ExerciseCard({ row, name, previousSets
         if (restSeconds > 0) startRest(restSeconds);
       }
     },
-    [rowId, previousSets, unit, restSeconds, startRest],
+    [rowId, fallbacks, restSeconds, startRest],
   );
 
   const handleRemoveSet = useCallback(
@@ -68,10 +76,10 @@ export const ExerciseCard = memo(function ExerciseCard({ row, name, previousSets
 
   const handleUsePrevious = useCallback(
     (setId: string, index: number) => {
-      const fallback = toFallback(previousSets?.[index], unit);
+      const fallback = fallbacks[index];
       if (fallback) actions.updateSet(rowId, setId, fallback);
     },
-    [rowId, previousSets, unit],
+    [rowId, fallbacks],
   );
 
   function confirmRemoveExercise() {
@@ -100,8 +108,12 @@ export const ExerciseCard = memo(function ExerciseCard({ row, name, previousSets
       <View style={styles.columns}>
         <Text style={[styles.column, { width: SET_COLUMNS.index }]}>{t('workout.columns.set')}</Text>
         <Text style={[styles.column, styles.previousColumn]}>{t('workout.columns.previous')}</Text>
-        <Text style={[styles.column, { width: SET_COLUMNS.input }]}>{t(`units.${unit}`)}</Text>
-        <Text style={[styles.column, { width: SET_COLUMNS.input }]}>{t('workout.columns.reps')}</Text>
+        <Text style={[styles.column, { width: SET_COLUMNS.input }]}>
+          {kind === 'cardio' ? t('workout.columns.time') : t(`units.${unit}`)}
+        </Text>
+        <Text style={[styles.column, { width: SET_COLUMNS.input }]}>
+          {kind === 'cardio' ? t('units.km') : t('workout.columns.reps')}
+        </Text>
         <View style={{ width: SET_COLUMNS.check }} />
       </View>
 
@@ -110,9 +122,9 @@ export const ExerciseCard = memo(function ExerciseCard({ row, name, previousSets
           key={set.id}
           index={index}
           set={set}
-          previous={previousSets?.[index]}
-          unit={unit}
-          language={i18n.language}
+          kind={kind}
+          previousText={previousTexts[index]}
+          fallback={fallbacks[index]}
           toggleLabel={t('workout.toggleSet', { number: index + 1 })}
           onChange={handleChange}
           onToggle={handleToggle}

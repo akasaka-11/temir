@@ -20,6 +20,8 @@ function selectHistory(db: Database, exerciseIds: readonly string[]) {
       exercisePosition: workoutSets.exercisePosition,
       weightKg: workoutSets.weightKg,
       reps: workoutSets.reps,
+      durationSeconds: workoutSets.durationSeconds,
+      distanceM: workoutSets.distanceM,
     })
     .from(workoutSets)
     .innerJoin(workouts, eq(workouts.id, workoutSets.workoutId))
@@ -70,6 +72,8 @@ export function getExerciseHistory(db: Database, exerciseId: string): ExerciseHi
       startedAt: workouts.startedAt,
       weightKg: workoutSets.weightKg,
       reps: workoutSets.reps,
+      durationSeconds: workoutSets.durationSeconds,
+      distanceM: workoutSets.distanceM,
     })
     .from(workoutSets)
     .innerJoin(workouts, eq(workouts.id, workoutSets.workoutId))
@@ -101,6 +105,8 @@ export function getSetsForWorkouts(db: Database, workoutIds: readonly string[]):
       setIndex: workoutSets.setIndex,
       weightKg: workoutSets.weightKg,
       reps: workoutSets.reps,
+      durationSeconds: workoutSets.durationSeconds,
+      distanceM: workoutSets.distanceM,
     })
     .from(workoutSets)
     .where(
@@ -125,6 +131,12 @@ export function getWorkout(db: Database, id: string): Workout | undefined {
 export function deleteWorkout(db: Database, id: string): void {
   const now = Date.now();
   db.update(workouts).set({ deletedAt: now, updatedAt: now }).where(eq(workouts.id, id)).run();
+}
+
+/** Soft-deletes every saved workout (the workout in progress is not in the DB, so it stays). */
+export function deleteAllWorkouts(db: Database): void {
+  const now = Date.now();
+  db.update(workouts).set({ deletedAt: now, updatedAt: now }).where(isNull(workouts.deletedAt)).run();
 }
 
 export type FinishedWorkoutInput = {
@@ -162,6 +174,8 @@ export function saveFinishedWorkout(db: Database, input: FinishedWorkoutInput): 
             setIndex: set.setIndex,
             weightKg: set.weightKg,
             reps: set.reps,
+            durationSeconds: set.durationSeconds,
+            distanceM: set.distanceM,
             rpe: null,
             isCompleted: true,
             createdAt: now,

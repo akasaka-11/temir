@@ -1,14 +1,16 @@
-import type { Equipment, MuscleGroup } from '../schema';
+import type { Equipment, ExerciseKind, MuscleGroup } from '../schema';
 
 export type BuiltInExercise = {
   id: string;
   nameKey: string;
   muscleGroup: MuscleGroup;
   equipment: Equipment;
+  /** Defaults to 'strength'. */
+  kind?: ExerciseKind;
 };
 
 // Bump when this list changes so existing installs pick up the new rows.
-export const EXERCISE_SEED_VERSION = 1;
+export const EXERCISE_SEED_VERSION = 2;
 
 // Built-in exercises. Names live in locales under "exerciseNames.<nameKey>".
 // Ids are fixed (never change them): the same exercise must have the same id on every device.
@@ -78,4 +80,13 @@ export const BUILT_IN_EXERCISES: readonly BuiltInExercise[] = [
   { id: '72906c91-2d96-5ad6-805b-4f4f660f19bd', nameKey: 'farmers_walk', muscleGroup: 'forearms', equipment: 'dumbbell' },
   { id: 'f0246420-603a-5076-b027-fb7317dedc90', nameKey: 'kettlebell_swing', muscleGroup: 'full_body', equipment: 'kettlebell' },
   { id: '933d8284-d1ed-5f5a-af4f-0eeab988bd65', nameKey: 'clean_and_press', muscleGroup: 'full_body', equipment: 'barbell' },
+  { id: '464cdace-d027-500a-a1ff-98d72b5717f0', nameKey: 'treadmill_run', muscleGroup: 'cardio', equipment: 'machine', kind: 'cardio' },
+  { id: '1eb291ef-66d8-53ac-8a20-ea32e0812efc', nameKey: 'outdoor_run', muscleGroup: 'cardio', equipment: 'bodyweight', kind: 'cardio' },
+  { id: 'd71cec47-527d-5a00-9baa-4fa7ca0d0bcb', nameKey: 'incline_walk', muscleGroup: 'cardio', equipment: 'machine', kind: 'cardio' },
+  { id: '736d9b6c-7909-5e73-8b55-613c5addb842', nameKey: 'stationary_bike', muscleGroup: 'cardio', equipment: 'machine', kind: 'cardio' },
+  { id: '4a485657-31f0-5035-9351-c470ca7a4ab8', nameKey: 'rowing_machine', muscleGroup: 'cardio', equipment: 'machine', kind: 'cardio' },
+  { id: 'bd91fefa-dc0c-5649-9525-6a10ea82879a', nameKey: 'elliptical', muscleGroup: 'cardio', equipment: 'machine', kind: 'cardio' },
+  { id: '4d1b657f-6a33-5591-b077-5994be78505a', nameKey: 'stair_climber', muscleGroup: 'cardio', equipment: 'machine', kind: 'cardio' },
+  { id: 'ffc8a7d9-c7c0-5750-8d3f-7eb2a0fc615b', nameKey: 'jump_rope', muscleGroup: 'cardio', equipment: 'other', kind: 'cardio' },
+  { id: 'e3b3b785-5d37-541d-b24e-b275f2ad30ad', nameKey: 'swimming', muscleGroup: 'cardio', equipment: 'other', kind: 'cardio' },
 ];

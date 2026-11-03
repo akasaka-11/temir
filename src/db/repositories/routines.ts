@@ -1,31 +1,63 @@
 import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { newId } from '@/lib/id';
-import type { RoutineDraft, RoutineDraftItem } from '@/lib/routineDraft';
+import { EMPTY_TARGET, type RoutineSpecItem, type TargetSet } from '@/lib/routineDraft';
 
 import type { Database } from '../client';
-import { type Routine, routineExercises, routines } from '../schema';
+import { exercises, type Routine, routineExercises, routines, routineSets } from '../schema';
 
 /** Routines sorted by name. Pass to useLiveQuery. */
 export function selectRoutines(db: Database) {
   return db.select().from(routines).where(isNull(routines.deletedAt)).orderBy(asc(routines.name));
 }
 
-export type RoutineItemRow = { routineId: string; exerciseId: string; targetSets: number };
+/** Exercises with planned sets for each routine, in their saved order. */
+export function getRoutineSpecs(db: Database, routineIds: readonly string[]): Map<string, RoutineSpecItem[]> {
+  const result = new Map<string, RoutineSpecItem[]>();
+  if (routineIds.length === 0) return result;
 
-/** Exercises of the given routines in their saved order. */
-export function getRoutineItems(db: Database, routineIds: readonly string[]): RoutineItemRow[] {
-  if (routineIds.length === 0) return [];
-  return db
+  const items = db
     .select({
+      id: routineExercises.id,
       routineId: routineExercises.routineId,
       exerciseId: routineExercises.exerciseId,
       targetSets: routineExercises.targetSets,
+      kind: exercises.kind,
     })
     .from(routineExercises)
+    .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
     .where(and(inArray(routineExercises.routineId, [...routineIds]), isNull(routineExercises.deletedAt)))
     .orderBy(asc(routineExercises.position))
     .all();
+
+  const sets = items.length
+    ? db
+        .select()
+        .from(routineSets)
+        .where(
+          and(
+            inArray(
+              routineSets.routineExerciseId,
+              items.map((i) => i.id),
+            ),
+            isNull(routineSets.deletedAt),
+          ),
+        )
+        .orderBy(asc(routineSets.setIndex))
+        .all()
+    : [];
+
+  for (const item of items) {
+    const planned: TargetSet[] = sets
+      .filter((s) => s.routineExerciseId === item.id)
+      .map((s) => ({ weightKg: s.weightKg, reps: s.reps, durationSeconds: s.durationSeconds, distanceM: s.distanceM }));
+    // Routines saved before per-set targets existed only have a set count.
+    const filled = planned.length > 0 ? planned : Array.from({ length: item.targetSets }, () => EMPTY_TARGET);
+    const list = result.get(item.routineId) ?? [];
+    list.push({ exerciseId: item.exerciseId, kind: item.kind, sets: filled });
+    result.set(item.routineId, list);
+  }
+  return result;
 }
 
 export function getRoutine(db: Database, id: string): Routine | undefined {
@@ -36,64 +68,87 @@ export function getRoutine(db: Database, id: string): Routine | undefined {
     .get();
 }
 
-/** Loads a routine into an editable draft (item keys are fresh ids). */
-export function loadRoutineDraft(db: Database, id: string): RoutineDraft | null {
-  const routine = getRoutine(db, id);
-  if (!routine) return null;
-  const items: RoutineDraftItem[] = getRoutineItems(db, [id]).map((item) => ({
-    key: newId(),
-    exerciseId: item.exerciseId,
-    targetSets: item.targetSets,
-  }));
-  return { id, name: routine.name, notes: routine.notes ?? '', items };
-}
+export type RoutineInput = {
+  /** null creates a new routine. */
+  id: string | null;
+  name: string;
+  notes: string;
+  items: readonly RoutineSpecItem[];
+};
 
 /**
- * Inserts or updates a routine. Old exercise rows are soft-deleted and replaced,
+ * Inserts or updates a routine. Old exercise/set rows are soft-deleted and replaced,
  * which keeps the history of changes visible to a future sync.
  */
-export function saveRoutine(db: Database, draft: RoutineDraft): string {
+export function saveRoutine(db: Database, input: RoutineInput): string {
   const now = Date.now();
-  const id = draft.id ?? newId();
-  const name = draft.name.trim();
-  const notes = draft.notes.trim() || null;
+  const id = input.id ?? newId();
+  const name = input.name.trim();
+  const notes = input.notes.trim() || null;
 
   db.transaction((tx) => {
-    if (draft.id) {
+    if (input.id) {
       tx.update(routines).set({ name, notes, updatedAt: now }).where(eq(routines.id, id)).run();
-      tx.update(routineExercises)
-        .set({ deletedAt: now, updatedAt: now })
-        .where(and(eq(routineExercises.routineId, id), isNull(routineExercises.deletedAt)))
-        .run();
+      softDeleteItems(tx, id, now);
     } else {
       tx.insert(routines).values({ id, name, notes, createdAt: now, updatedAt: now }).run();
     }
-    if (draft.items.length > 0) {
+    input.items.forEach((item, position) => {
+      const itemId = newId();
       tx.insert(routineExercises)
-        .values(
-          draft.items.map((item, position) => ({
-            id: newId(),
-            routineId: id,
-            exerciseId: item.exerciseId,
-            position,
-            targetSets: item.targetSets,
-            createdAt: now,
-            updatedAt: now,
-          })),
-        )
+        .values({
+          id: itemId,
+          routineId: id,
+          exerciseId: item.exerciseId,
+          position,
+          targetSets: item.sets.length,
+          createdAt: now,
+          updatedAt: now,
+        })
         .run();
-    }
+      if (item.sets.length > 0) {
+        tx.insert(routineSets)
+          .values(
+            item.sets.map((set, setIndex) => ({
+              id: newId(),
+              routineExerciseId: itemId,
+              setIndex,
+              ...set,
+              createdAt: now,
+              updatedAt: now,
+            })),
+          )
+          .run();
+      }
+    });
   });
   return id;
+}
+
+type Tx = Parameters<Parameters<Database['transaction']>[0]>[0];
+
+function softDeleteItems(tx: Tx, routineId: string, now: number) {
+  const old = tx
+    .select({ id: routineExercises.id })
+    .from(routineExercises)
+    .where(and(eq(routineExercises.routineId, routineId), isNull(routineExercises.deletedAt)))
+    .all()
+    .map((r) => r.id);
+  if (old.length === 0) return;
+  tx.update(routineSets)
+    .set({ deletedAt: now, updatedAt: now })
+    .where(and(inArray(routineSets.routineExerciseId, old), isNull(routineSets.deletedAt)))
+    .run();
+  tx.update(routineExercises)
+    .set({ deletedAt: now, updatedAt: now })
+    .where(inArray(routineExercises.id, old))
+    .run();
 }
 
 export function deleteRoutine(db: Database, id: string): void {
   const now = Date.now();
   db.transaction((tx) => {
     tx.update(routines).set({ deletedAt: now, updatedAt: now }).where(eq(routines.id, id)).run();
-    tx.update(routineExercises)
-      .set({ deletedAt: now, updatedAt: now })
-      .where(and(eq(routineExercises.routineId, id), isNull(routineExercises.deletedAt)))
-      .run();
+    softDeleteItems(tx, id, now);
   });
 }

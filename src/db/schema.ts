@@ -23,6 +23,7 @@ export const MUSCLE_GROUPS = [
   'calves',
   'abs',
   'full_body',
+  'cardio',
 ] as const;
 export type MuscleGroup = (typeof MUSCLE_GROUPS)[number];
 
@@ -37,6 +38,10 @@ export const EQUIPMENT = [
 ] as const;
 export type Equipment = (typeof EQUIPMENT)[number];
 
+/** strength: weight × reps; cardio: duration (+ optional distance). */
+export const EXERCISE_KINDS = ['strength', 'cardio'] as const;
+export type ExerciseKind = (typeof EXERCISE_KINDS)[number];
+
 export const exercises = sqliteTable(
   'exercises',
   {
@@ -47,6 +52,7 @@ export const exercises = sqliteTable(
     muscleGroup: text('muscle_group', { enum: MUSCLE_GROUPS }).notNull(),
     equipment: text('equipment', { enum: EQUIPMENT }).notNull(),
     isCustom: integer('is_custom', { mode: 'boolean' }).notNull().default(false),
+    kind: text('kind', { enum: EXERCISE_KINDS }).notNull().default('strength'),
     ...timestamps,
   },
   (table) => [index('exercises_muscle_group_idx').on(table.muscleGroup)],
@@ -74,6 +80,24 @@ export const routineExercises = sqliteTable(
     ...timestamps,
   },
   (table) => [index('routine_exercises_routine_idx').on(table.routineId)],
+);
+
+/** Planned sets of a routine exercise. Targets are optional; weight is always kg. */
+export const routineSets = sqliteTable(
+  'routine_sets',
+  {
+    id: text('id').primaryKey(),
+    routineExerciseId: text('routine_exercise_id')
+      .notNull()
+      .references(() => routineExercises.id, { onDelete: 'cascade' }),
+    setIndex: integer('set_index').notNull(),
+    weightKg: real('weight_kg'),
+    reps: integer('reps'),
+    durationSeconds: integer('duration_seconds'),
+    distanceM: real('distance_m'),
+    ...timestamps,
+  },
+  (table) => [index('routine_sets_routine_exercise_idx').on(table.routineExerciseId)],
 );
 
 export const workouts = sqliteTable(
@@ -106,6 +130,9 @@ export const workoutSets = sqliteTable(
     weightKg: real('weight_kg').notNull().default(0),
     reps: integer('reps').notNull().default(0),
     rpe: real('rpe'),
+    // Cardio only (null for strength sets).
+    durationSeconds: integer('duration_seconds'),
+    distanceM: real('distance_m'),
     isCompleted: integer('is_completed', { mode: 'boolean' }).notNull().default(false),
     ...timestamps,
   },

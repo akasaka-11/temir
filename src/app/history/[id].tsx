@@ -8,7 +8,8 @@ import { EmptyState } from '@/components/EmptyState';
 import { StatGrid } from '@/components/StatGrid';
 import { db } from '@/db/client';
 import { deleteWorkout, getSetsForWorkouts, getWorkout } from '@/db/repositories/workouts';
-import { useExerciseNames } from '@/features/exercises/useExerciseNames';
+import { useExerciseCatalog } from '@/features/exercises/useExerciseNames';
+import { formatSetResult } from '@/features/workout/formatSet';
 import { buildWorkoutStatTiles } from '@/features/workout/statTiles';
 import { buildWorkoutStats, formatTime, formatWorkoutDate } from '@/lib/history';
 import { formatWeight } from '@/lib/units';
@@ -20,7 +21,7 @@ export default function WorkoutDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const unit = useSettings((state) => state.unit);
-  const names = useExerciseNames();
+  const { names, kinds } = useExerciseCatalog();
   const lang = i18n.language;
 
   const workout = useMemo(() => getWorkout(db, id), [id]);
@@ -31,7 +32,6 @@ export default function WorkoutDetailScreen() {
   }
 
   const finishedAt = workout.finishedAt ?? workout.startedAt;
-  const unitLabel = t(`units.${unit}`);
   const tiles = buildWorkoutStatTiles(
     {
       durationMs: finishedAt - workout.startedAt,
@@ -69,32 +69,37 @@ export default function WorkoutDetailScreen() {
 
       <StatGrid stats={tiles} />
 
-      {stats?.exercises.map((exercise, exerciseIndex) => (
-        <View key={`${exercise.exerciseId}-${exerciseIndex}`} style={styles.card}>
-          <Pressable
-            accessibilityRole="link"
-            onPress={() => router.push({ pathname: '/exercise/[id]', params: { id: exercise.exerciseId } })}
-          >
-            <Text style={styles.exerciseName}>{names.get(exercise.exerciseId) ?? ''}</Text>
-          </Pressable>
-          <View style={styles.row}>
-            <Text style={[styles.headerCell, styles.indexCell]}>{t('workout.columns.set')}</Text>
-            <Text style={[styles.headerCell, styles.resultCell]}>{t('history.columns.result')}</Text>
-            <Text style={[styles.headerCell, styles.oneRmCell]}>{t('history.columns.oneRepMax')}</Text>
-          </View>
-          {exercise.sets.map((set, index) => (
-            <View key={index} style={styles.row}>
-              <Text style={[styles.cell, styles.indexCell, styles.muted]}>{index + 1}</Text>
-              <Text style={[styles.cell, styles.resultCell]}>
-                {formatWeight(set.weightKg, unit, lang)} {unitLabel} × {set.reps}
-              </Text>
-              <Text style={[styles.cell, styles.oneRmCell, styles.muted]}>
-                {formatWeight(estimateOneRepMax(set), unit, lang)}
-              </Text>
+      {stats?.exercises.map((exercise, exerciseIndex) => {
+        const kind = kinds.get(exercise.exerciseId) ?? 'strength';
+        return (
+          <View key={`${exercise.exerciseId}-${exerciseIndex}`} style={styles.card}>
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => router.push({ pathname: '/exercise/[id]', params: { id: exercise.exerciseId } })}
+            >
+              <Text style={styles.exerciseName}>{names.get(exercise.exerciseId) ?? ''}</Text>
+            </Pressable>
+            <View style={styles.row}>
+              <Text style={[styles.headerCell, styles.indexCell]}>{t('workout.columns.set')}</Text>
+              <Text style={[styles.headerCell, styles.resultCell]}>{t('history.columns.result')}</Text>
+              {kind === 'strength' && (
+                <Text style={[styles.headerCell, styles.oneRmCell]}>{t('history.columns.oneRepMax')}</Text>
+              )}
             </View>
-          ))}
-        </View>
-      ))}
+            {exercise.sets.map((set, index) => (
+              <View key={index} style={styles.row}>
+                <Text style={[styles.cell, styles.indexCell, styles.muted]}>{index + 1}</Text>
+                <Text style={[styles.cell, styles.resultCell]}>{formatSetResult(set, kind, unit, lang, t)}</Text>
+                {kind === 'strength' && (
+                  <Text style={[styles.cell, styles.oneRmCell, styles.muted]}>
+                    {formatWeight(estimateOneRepMax(set), unit, lang)}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        );
+      })}
 
       <Button label={t('history.delete')} variant="danger" icon="trash-outline" onPress={confirmDelete} />
     </ScrollView>

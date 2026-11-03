@@ -51,6 +51,7 @@ describe('buildSeedRows', () => {
       customName: null,
       muscleGroup: BUILT_IN_EXERCISES[0]!.muscleGroup,
       equipment: BUILT_IN_EXERCISES[0]!.equipment,
+      kind: 'strength',
       isCustom: false,
       createdAt: 1_700_000_000_000,
       updatedAt: 1_700_000_000_000,

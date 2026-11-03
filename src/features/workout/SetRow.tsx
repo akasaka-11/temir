@@ -1,21 +1,43 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { type KeyboardTypeOptions, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { ActiveSet } from '@/lib/activeWorkout';
-import { formatWeight, type WeightUnit, weightToInput } from '@/lib/units';
-import type { SetResult } from '@/lib/workoutMath';
+import type { ExerciseKind } from '@/db/schema';
+import type { ActiveSet, SetFallback, SetTexts } from '@/lib/activeWorkout';
 import { colors, radius, spacing, typography } from '@/theme';
+
+type Field = {
+  key: keyof SetTexts;
+  keyboardType: KeyboardTypeOptions;
+  placeholder: string;
+  maxLength: number;
+};
+
+/** Strength: weight + reps. Cardio: duration (mm:ss) + distance (km). */
+function fieldsFor(kind: ExerciseKind, fallback: SetFallback | undefined): [Field, Field] {
+  if (kind === 'cardio') {
+    return [
+      { key: 'durationText', keyboardType: 'numbers-and-punctuation', placeholder: fallback?.durationText || '0:00', maxLength: 8 },
+      { key: 'distanceText', keyboardType: 'decimal-pad', placeholder: fallback?.distanceText || '—', maxLength: 6 },
+    ];
+  }
+  return [
+    { key: 'weightText', keyboardType: 'decimal-pad', placeholder: fallback?.weightText || '0', maxLength: 7 },
+    { key: 'repsText', keyboardType: 'number-pad', placeholder: fallback?.repsText || '0', maxLength: 4 },
+  ];
+}
 
 type Props = {
   index: number;
   set: ActiveSet;
-  previous: SetResult | undefined;
-  unit: WeightUnit;
-  language: string;
+  kind: ExerciseKind;
+  /** Last time's result, already formatted ("60 kg × 8"), or undefined. */
+  previousText: string | undefined;
+  /** Last time's values as input texts (placeholders and auto-fill). */
+  fallback: SetFallback | undefined;
   toggleLabel: string;
   // Handlers take ids so the parent can pass stable callbacks and memo works.
-  onChange: (setId: string, patch: { weightText?: string; repsText?: string }) => void;
+  onChange: (setId: string, patch: Partial<SetTexts>) => void;
   onToggle: (setId: string, index: number) => void;
   onLongPressIndex: (setId: string, index: number) => void;
   onUsePrevious: (setId: string, index: number) => void;
@@ -24,9 +46,9 @@ type Props = {
 export const SetRow = memo(function SetRow({
   index,
   set,
-  previous,
-  unit,
-  language,
+  kind,
+  previousText,
+  fallback,
   toggleLabel,
   onChange,
   onToggle,
@@ -34,40 +56,35 @@ export const SetRow = memo(function SetRow({
   onUsePrevious,
 }: Props) {
   const done = set.isCompleted;
-  const previousText = previous ? `${formatWeight(previous.weightKg, unit, language)} × ${previous.reps}` : '—';
 
   return (
     <View style={[styles.row, done && styles.rowDone]}>
       <Pressable onLongPress={() => onLongPressIndex(set.id, index)} style={styles.indexCell} hitSlop={4}>
         <Text style={styles.index}>{index + 1}</Text>
       </Pressable>
-      <Pressable onPress={() => onUsePrevious(set.id, index)} disabled={!previous || done} style={styles.previousCell}>
+      <Pressable
+        onPress={() => onUsePrevious(set.id, index)}
+        disabled={!previousText || done}
+        style={styles.previousCell}
+      >
         <Text style={styles.previous} numberOfLines={1}>
-          {previousText}
+          {previousText ?? '—'}
         </Text>
       </Pressable>
-      <TextInput
-        value={set.weightText}
-        onChangeText={(weightText) => onChange(set.id, { weightText })}
-        placeholder={previous ? weightToInput(previous.weightKg, unit) : '0'}
-        placeholderTextColor={colors.textMuted}
-        keyboardType="decimal-pad"
-        style={[styles.input, done && styles.inputDone]}
-        editable={!done}
-        selectTextOnFocus
-        maxLength={7}
-      />
-      <TextInput
-        value={set.repsText}
-        onChangeText={(repsText) => onChange(set.id, { repsText })}
-        placeholder={previous ? String(previous.reps) : '0'}
-        placeholderTextColor={colors.textMuted}
-        keyboardType="number-pad"
-        style={[styles.input, done && styles.inputDone]}
-        editable={!done}
-        selectTextOnFocus
-        maxLength={4}
-      />
+      {fieldsFor(kind, fallback).map((field) => (
+        <TextInput
+          key={field.key}
+          value={set[field.key] ?? ''}
+          onChangeText={(text) => onChange(set.id, { [field.key]: text })}
+          placeholder={field.placeholder}
+          placeholderTextColor={colors.textMuted}
+          keyboardType={field.keyboardType}
+          style={[styles.input, done && styles.inputDone]}
+          editable={!done}
+          selectTextOnFocus
+          maxLength={field.maxLength}
+        />
+      ))}
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: done }}
@@ -97,7 +114,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs + 2,
     borderRadius: radius.sm,
   },
-  rowDone: { backgroundColor: 'rgba(52, 199, 89, 0.12)' },
+  rowDone: { backgroundColor: colors.completedRow },
   indexCell: { width: SET_COLUMNS.index, alignItems: 'center' },
   index: { ...typography.body, color: colors.textMuted, fontWeight: '600' },
   previousCell: { flex: 1 },

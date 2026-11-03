@@ -9,6 +9,7 @@ export function buildSeedRows(list: readonly BuiltInExercise[], now: number): Ne
     customName: null,
     muscleGroup: exercise.muscleGroup,
     equipment: exercise.equipment,
+    kind: exercise.kind ?? 'strength',
     isCustom: false,
     createdAt: now,
     updatedAt: now,

@@ -7,6 +7,13 @@ export type HistorySetRow = SetResult & {
   setIndex: number;
 };
 
+const toSetResult = (row: SetResult): SetResult => ({
+  weightKg: row.weightKg,
+  reps: row.reps,
+  durationSeconds: row.durationSeconds ?? null,
+  distanceM: row.distanceM ?? null,
+});
+
 export type ExerciseInWorkout = {
   exerciseId: string;
   sets: SetResult[];
@@ -34,7 +41,7 @@ export function buildWorkoutStats(rows: readonly HistorySetRow[]): Map<string, W
       stats.exercises.push(exercise);
       lastPosition.set(row.workoutId, row.exercisePosition);
     }
-    exercise.sets.push({ weightKg: row.weightKg, reps: row.reps });
+    exercise.sets.push(toSetResult(row));
     stats.setCount += 1;
     stats.volumeKg += totalVolume([row]);
     result.set(row.workoutId, stats);
@@ -56,7 +63,7 @@ export function pickLatestBlocks(
     const chosen = chosenBlock.get(row.exerciseId) ?? block;
     chosenBlock.set(row.exerciseId, chosen);
     if (chosen !== block) continue;
-    result.set(row.exerciseId, [...(result.get(row.exerciseId) ?? []), { weightKg: row.weightKg, reps: row.reps }]);
+    result.set(row.exerciseId, [...(result.get(row.exerciseId) ?? []), toSetResult(row)]);
   }
   return result;
 }

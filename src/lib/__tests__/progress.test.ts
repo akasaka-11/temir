@@ -4,6 +4,7 @@ import {
   computeRecords,
   type ExerciseHistoryRow,
   metricValue,
+  topExerciseTrends,
 } from '../progress';
 
 function row(workoutId: string, startedAt: number, weightKg: number, reps: number): ExerciseHistoryRow {
@@ -42,10 +43,10 @@ describe('buildProgressPoints', () => {
 describe('computeRecords', () => {
   it('returns each record with the date it was reached', () => {
     const records = computeRecords(rows);
-    expect(records.maxWeight).toMatchObject({ valueKg: 110, date: 2000 });
+    expect(records.maxWeight).toMatchObject({ value: 110, date: 2000 });
     expect(records.bestOneRepMax!.date).toBe(2000);
-    expect(records.bestSetVolume).toMatchObject({ valueKg: 800, date: 1000 });
-    expect(records.bestWorkoutVolume).toMatchObject({ valueKg: 1250, date: 1000 });
+    expect(records.bestSetVolume).toMatchObject({ value: 800, date: 1000 });
+    expect(records.bestWorkoutVolume).toMatchObject({ value: 1250, date: 1000 });
   });
 
   it('keeps the earliest date on ties', () => {
@@ -59,8 +60,62 @@ describe('computeRecords', () => {
       bestOneRepMax: null,
       bestSetVolume: null,
       bestWorkoutVolume: null,
+      longestDuration: null,
+      longestDistance: null,
     });
     expect(computeRecords([row('a', 1, 0, 10)]).maxWeight).toBeNull();
+  });
+});
+
+describe('cardio progress', () => {
+  const cardio = [
+    { workoutId: 'a', startedAt: 1, weightKg: 0, reps: 0, durationSeconds: 1200, distanceM: 3000 },
+    { workoutId: 'a', startedAt: 1, weightKg: 0, reps: 0, durationSeconds: 600, distanceM: 1500 },
+    { workoutId: 'b', startedAt: 2, weightKg: 0, reps: 0, durationSeconds: 1500, distanceM: null },
+  ];
+
+  it('sums duration and distance per workout', () => {
+    const [a, b] = buildProgressPoints(cardio);
+    expect(metricValue(a!, 'duration')).toBe(1800);
+    expect(metricValue(a!, 'distance')).toBe(4500);
+    expect(metricValue(b!, 'distance')).toBe(0);
+  });
+
+  it('finds the longest session and distance', () => {
+    const records = computeRecords(cardio);
+    expect(records.longestDuration).toMatchObject({ value: 1500, date: 2 });
+    expect(records.longestDistance).toMatchObject({ value: 3000, date: 1 });
+    expect(records.maxWeight).toBeNull();
+  });
+});
+
+describe('topExerciseTrends', () => {
+  const kinds = new Map<string, 'strength' | 'cardio'>([['run', 'cardio']]);
+  // Newest first, like the history list.
+  const workouts = [
+    { exercises: [{ exerciseId: 'bench', sets: [{ weightKg: 110, reps: 1 }] }] },
+    {
+      exercises: [
+        { exerciseId: 'bench', sets: [{ weightKg: 100, reps: 1 }, { weightKg: 90, reps: 1 }] },
+        { exerciseId: 'run', sets: [{ weightKg: 0, reps: 0, durationSeconds: 1200 }] },
+      ],
+    },
+    { exercises: [{ exerciseId: 'run', sets: [{ weightKg: 0, reps: 0, durationSeconds: 900 }] }] },
+    { exercises: [{ exerciseId: 'bench', sets: [{ weightKg: 100, reps: 1 }] }] },
+  ];
+
+  it('ranks by sessions and compares first vs latest best', () => {
+    const trends = topExerciseTrends(workouts, kinds, 5);
+    expect(trends.map((t) => t.exerciseId)).toEqual(['bench', 'run']);
+    expect(trends[0]).toMatchObject({ sessions: 3, first: 100, latest: 110 });
+    expect(trends[0]!.change).toBeCloseTo(0.1, 5);
+    expect(trends[1]).toMatchObject({ sessions: 2, first: 900, latest: 1200 });
+  });
+
+  it('respects the limit and handles zero starting values', () => {
+    expect(topExerciseTrends(workouts, kinds, 1)).toHaveLength(1);
+    const zero = topExerciseTrends([{ exercises: [{ exerciseId: 'x', sets: [{ weightKg: 0, reps: 10 }] }] }], kinds, 5);
+    expect(zero[0]!.change).toBeNull();
   });
 });
 

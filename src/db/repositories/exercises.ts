@@ -31,6 +31,8 @@ export function createCustomExercise(db: Database, input: NewCustomExercise): st
       muscleGroup: input.muscleGroup,
       equipment: input.equipment,
       isCustom: true,
+      // Cardio exercises are logged by time/distance instead of weight × reps.
+      kind: input.muscleGroup === 'cardio' ? 'cardio' : 'strength',
       createdAt: now,
       updatedAt: now,
     })
