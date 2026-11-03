@@ -1,7 +1,10 @@
 {
   "common": {
     "save": "Save",
-    "clear": "Clear"
+    "clear": "Clear",
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "done": "Done"
   },
   "tabs": {
     "workout": "Workout",
@@ -10,8 +13,54 @@
     "profile": "Profile"
   },
   "workout": {
-    "emptyTitle": "No active workout",
-    "emptyHint": "Workout logging arrives in the next stages."
+    "defaultName": "Workout",
+    "startTitle": "Ready to train?",
+    "startHint": "Start an empty workout and add exercises as you go.",
+    "startEmpty": "Start empty workout",
+    "completedSets_one": "{{count}} set done",
+    "completedSets_other": "{{count}} sets done",
+    "finish": "Finish",
+    "finishTitle": "Finish workout?",
+    "finishBody_one": "You completed {{count}} set. Unchecked sets will not be saved.",
+    "finishBody_other": "You completed {{count}} sets. Unchecked sets will not be saved.",
+    "discard": "Discard workout",
+    "discardTitle": "Discard workout?",
+    "discardBody": "All sets of this workout will be lost.",
+    "emptyFinishTitle": "No completed sets",
+    "emptyFinishBody": "Tick at least one set to save the workout, or discard it.",
+    "noExercises": "Add your first exercise to start logging sets.",
+    "addExercises": "Add exercises",
+    "addSelected": "Add ({{count}})",
+    "addSet": "Add set",
+    "removeExerciseTitle": "Remove exercise?",
+    "removeSetTitle": "Remove set {{number}}?",
+    "toggleSet": "Mark set {{number}} as done",
+    "columns": {
+      "set": "Set",
+      "previous": "Previous",
+      "reps": "Reps"
+    }
+  },
+  "rest": {
+    "title": "Rest",
+    "skip": "Skip",
+    "notificationTitle": "Rest is over",
+    "notificationBody": "Time for your next set"
+  },
+  "summary": {
+    "title": "Workout complete!",
+    "duration": "Duration",
+    "volume": "Volume",
+    "sets": "Sets",
+    "exercises": "Exercises",
+    "records_one": "{{count}} new record",
+    "records_other": "{{count}} new records",
+    "noRecords": "No new records this time. Records appear once an exercise has history."
+  },
+  "records": {
+    "weight": "Heaviest weight",
+    "oneRepMax": "Best estimated 1RM",
+    "volume": "Best set volume"
   },
   "history": {
     "emptyTitle": "No workouts yet",
@@ -51,6 +100,8 @@
     "ru": "Русский"
   },
   "units": {
+    "kg": "kg",
+    "lb": "lb",
     "sets_one": "{{count}} set",
     "sets_other": "{{count}} sets"
   },

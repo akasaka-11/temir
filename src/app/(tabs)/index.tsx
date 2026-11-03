@@ -1,8 +1,8 @@
-import { useTranslation } from 'react-i18next';
-
-import { EmptyState } from '@/components/EmptyState';
+import { ActiveWorkoutView } from '@/features/workout/ActiveWorkoutView';
+import { StartWorkoutView } from '@/features/workout/StartWorkoutView';
+import { useActiveWorkout } from '@/store/activeWorkout';
 
 export default function WorkoutScreen() {
-  const { t } = useTranslation();
-  return <EmptyState icon="barbell-outline" title={t('workout.emptyTitle')} hint={t('workout.emptyHint')} />;
+  const workout = useActiveWorkout((state) => state.workout);
+  return workout ? <ActiveWorkoutView workout={workout} /> : <StartWorkoutView />;
 }

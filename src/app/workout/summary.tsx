@@ -1,0 +1,104 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+
+import { Button } from '@/components/Button';
+import { useExerciseNames } from '@/features/exercises/useExerciseNames';
+import { formatWeight } from '@/lib/units';
+import { formatDuration } from '@/lib/workoutMath';
+import { useActiveWorkout } from '@/store/activeWorkout';
+import { useSettings } from '@/store/settings';
+import { colors, radius, spacing, typography } from '@/theme';
+
+export default function WorkoutSummaryScreen() {
+  const { t, i18n } = useTranslation();
+  const summary = useActiveWorkout((state) => state.summary);
+  const unit = useSettings((state) => state.unit);
+  const names = useExerciseNames();
+
+  function close() {
+    useActiveWorkout.getState().setSummary(null);
+    router.back();
+  }
+
+  if (!summary) return null;
+
+  const stats = [
+    { label: t('summary.duration'), value: formatDuration(summary.durationMs) },
+    { label: t('summary.volume'), value: `${formatWeight(summary.volumeKg, unit, i18n.language)} ${t(`units.${unit}`)}` },
+    { label: t('summary.sets'), value: String(summary.setCount) },
+    { label: t('summary.exercises'), value: String(summary.exerciseCount) },
+  ];
+
+  return (
+    <View style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Ionicons name="trophy-outline" size={56} color={colors.primary} style={styles.icon} />
+        <Text style={styles.title}>{t('summary.title')}</Text>
+
+        <View style={styles.stats}>
+          {stats.map((stat) => (
+            <View key={stat.label} style={styles.stat}>
+              <Text style={styles.statValue}>{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat.label}</Text>
+            </View>
+          ))}
+        </View>
+
+        <Text style={styles.section}>{t('summary.records', { count: summary.records.length })}</Text>
+        {summary.records.length === 0 ? (
+          <Text style={styles.muted}>{t('summary.noRecords')}</Text>
+        ) : (
+          summary.records.map((record) => (
+            <View key={`${record.exerciseId}-${record.type}`} style={styles.record}>
+              <Ionicons name="medal-outline" size={20} color={colors.primary} />
+              <View style={styles.recordText}>
+                <Text style={styles.recordName}>{names.get(record.exerciseId) ?? ''}</Text>
+                <Text style={styles.muted}>{t(`records.${record.type}`)}</Text>
+              </View>
+              <Text style={styles.recordValue}>
+                {formatWeight(record.valueKg, unit, i18n.language)} {t(`units.${unit}`)}
+              </Text>
+            </View>
+          ))
+        )}
+      </ScrollView>
+      <View style={styles.footer}>
+        <Button label={t('common.done')} onPress={close} />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.lg, gap: spacing.md },
+  icon: { alignSelf: 'center', marginTop: spacing.lg },
+  title: { ...typography.title, color: colors.text, textAlign: 'center' },
+  stats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md },
+  stat: {
+    flexGrow: 1,
+    flexBasis: '45%',
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    gap: spacing.xs,
+  },
+  statValue: { ...typography.title, color: colors.text, fontVariant: ['tabular-nums'] },
+  statLabel: { ...typography.caption, color: colors.textMuted },
+  section: { ...typography.heading, color: colors.text, marginTop: spacing.lg },
+  muted: { ...typography.caption, color: colors.textMuted },
+  record: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+  },
+  recordText: { flex: 1, gap: 2 },
+  recordName: { ...typography.body, color: colors.text, fontWeight: '500' },
+  recordValue: { ...typography.body, color: colors.primary, fontWeight: '600' },
+  footer: { padding: spacing.lg },
+});

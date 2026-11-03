@@ -5,7 +5,10 @@ import { StatusBar } from 'expo-status-bar';
 import { useTranslation } from 'react-i18next';
 
 import { DatabaseProvider } from '@/db/DatabaseProvider';
+import { configureNotifications } from '@/features/workout/restNotifications';
 import { colors } from '@/theme';
+
+configureNotifications();
 
 const navigationTheme: Theme = {
   ...DarkTheme,
@@ -37,6 +40,14 @@ export default function RootLayout() {
           <Stack.Screen
             name="exercise/new"
             options={{ presentation: 'modal', title: t('exerciseForm.title') }}
+          />
+          <Stack.Screen
+            name="workout/add-exercises"
+            options={{ presentation: 'modal', title: t('workout.addExercises') }}
+          />
+          <Stack.Screen
+            name="workout/summary"
+            options={{ presentation: 'modal', headerShown: false, gestureEnabled: false }}
           />
         </Stack>
       </DatabaseProvider>
