@@ -1,11 +1,12 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 
 import type { CompletedSet } from '@/lib/activeWorkout';
+import type { HistorySetRow } from '@/lib/history';
 import { newId } from '@/lib/id';
 import { bestsOf, type ExerciseBests, type SetResult } from '@/lib/workoutMath';
 
 import type { Database } from '../client';
-import { workouts, workoutSets } from '../schema';
+import { type Workout, workouts, workoutSets } from '../schema';
 
 const finishedAndAlive = and(isNotNull(workouts.finishedAt), isNull(workouts.deletedAt));
 
@@ -65,6 +66,48 @@ export function getExerciseBests(
     grouped.set(row.exerciseId, sets);
   }
   return new Map([...grouped].map(([id, sets]) => [id, bestsOf(sets)]));
+}
+
+/** Finished, not deleted workouts, newest first. Pass to useLiveQuery. */
+export function selectFinishedWorkouts(db: Database) {
+  return db.select().from(workouts).where(finishedAndAlive).orderBy(desc(workouts.startedAt));
+}
+
+/** All saved sets of the given workouts, for building list/detail stats. */
+export function getSetsForWorkouts(db: Database, workoutIds: readonly string[]): HistorySetRow[] {
+  if (workoutIds.length === 0) return [];
+  return db
+    .select({
+      workoutId: workoutSets.workoutId,
+      exerciseId: workoutSets.exerciseId,
+      exercisePosition: workoutSets.exercisePosition,
+      setIndex: workoutSets.setIndex,
+      weightKg: workoutSets.weightKg,
+      reps: workoutSets.reps,
+    })
+    .from(workoutSets)
+    .where(
+      and(
+        inArray(workoutSets.workoutId, [...workoutIds]),
+        eq(workoutSets.isCompleted, true),
+        isNull(workoutSets.deletedAt),
+      ),
+    )
+    .all();
+}
+
+export function getWorkout(db: Database, id: string): Workout | undefined {
+  return db
+    .select()
+    .from(workouts)
+    .where(and(eq(workouts.id, id), isNull(workouts.deletedAt)))
+    .get();
+}
+
+/** Soft delete: keeps the row with deleted_at so a future sync can propagate the deletion. */
+export function deleteWorkout(db: Database, id: string): void {
+  const now = Date.now();
+  db.update(workouts).set({ deletedAt: now, updatedAt: now }).where(eq(workouts.id, id)).run();
 }
 
 export type FinishedWorkoutInput = {

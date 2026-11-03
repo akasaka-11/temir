@@ -64,7 +64,17 @@
   },
   "history": {
     "emptyTitle": "Әзірге жаттығу жоқ",
-    "emptyHint": "Аяқталған жаттығуларыңыз осында көрінеді."
+    "emptyHint": "Аяқталған жаттығуларыңыз осында көрінеді.",
+    "moreExercises_one": "тағы {{count}} жаттығу",
+    "moreExercises_other": "тағы {{count}} жаттығу",
+    "notFound": "Жаттығу табылмады",
+    "delete": "Жаттығуды жою",
+    "deleteTitle": "Жаттығуды жою керек пе?",
+    "deleteBody": "Ол тарихтан жойылып, рекордтарға есептелмейді.",
+    "columns": {
+      "result": "Салмақ × қайталау",
+      "oneRepMax": "1ҚМ"
+    }
   },
   "exercises": {
     "searchPlaceholder": "Жаттығуларды іздеу",

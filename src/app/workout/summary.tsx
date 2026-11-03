@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
+import { StatGrid } from '@/components/StatGrid';
 import { useExerciseNames } from '@/features/exercises/useExerciseNames';
 import { formatWeight } from '@/lib/units';
 import { formatDuration } from '@/lib/workoutMath';
@@ -38,12 +39,7 @@ export default function WorkoutSummaryScreen() {
         <Text style={styles.title}>{t('summary.title')}</Text>
 
         <View style={styles.stats}>
-          {stats.map((stat) => (
-            <View key={stat.label} style={styles.stat}>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </View>
-          ))}
+          <StatGrid stats={stats} />
         </View>
 
         <Text style={styles.section}>{t('summary.records', { count: summary.records.length })}</Text>
@@ -76,17 +72,7 @@ const styles = StyleSheet.create({
   content: { padding: spacing.lg, gap: spacing.md },
   icon: { alignSelf: 'center', marginTop: spacing.lg },
   title: { ...typography.title, color: colors.text, textAlign: 'center' },
-  stats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md },
-  stat: {
-    flexGrow: 1,
-    flexBasis: '45%',
-    padding: spacing.lg,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
-    gap: spacing.xs,
-  },
-  statValue: { ...typography.title, color: colors.text, fontVariant: ['tabular-nums'] },
-  statLabel: { ...typography.caption, color: colors.textMuted },
+  stats: { marginTop: spacing.md },
   section: { ...typography.heading, color: colors.text, marginTop: spacing.lg },
   muted: { ...typography.caption, color: colors.textMuted },
   record: {

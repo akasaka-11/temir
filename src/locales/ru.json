@@ -70,7 +70,19 @@
   },
   "history": {
     "emptyTitle": "Тренировок пока нет",
-    "emptyHint": "Здесь появятся завершённые тренировки."
+    "emptyHint": "Здесь появятся завершённые тренировки.",
+    "moreExercises_one": "и ещё {{count}} упражнение",
+    "moreExercises_few": "и ещё {{count}} упражнения",
+    "moreExercises_many": "и ещё {{count}} упражнений",
+    "moreExercises_other": "и ещё {{count}} упражнения",
+    "notFound": "Тренировка не найдена",
+    "delete": "Удалить тренировку",
+    "deleteTitle": "Удалить тренировку?",
+    "deleteBody": "Она исчезнет из истории и перестанет учитываться в рекордах.",
+    "columns": {
+      "result": "Вес × повторы",
+      "oneRepMax": "1ПМ"
+    }
   },
   "exercises": {
     "searchPlaceholder": "Поиск упражнений",

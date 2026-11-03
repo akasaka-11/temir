@@ -64,7 +64,17 @@
   },
   "history": {
     "emptyTitle": "No workouts yet",
-    "emptyHint": "Your finished workouts will show up here."
+    "emptyHint": "Your finished workouts will show up here.",
+    "moreExercises_one": "+{{count}} more exercise",
+    "moreExercises_other": "+{{count}} more exercises",
+    "notFound": "Workout not found",
+    "delete": "Delete workout",
+    "deleteTitle": "Delete workout?",
+    "deleteBody": "It will disappear from history and stop counting towards records.",
+    "columns": {
+      "result": "Weight × reps",
+      "oneRepMax": "Est. 1RM"
+    }
   },
   "exercises": {
     "searchPlaceholder": "Search exercises",
