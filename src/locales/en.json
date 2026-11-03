@@ -99,7 +99,24 @@
   "profile": {
     "settings": "Settings",
     "language": "Language",
-    "languageHint": "Applied instantly, no restart needed."
+    "languageHint": "Applied instantly, no restart needed.",
+    "statsTitle": "Statistics",
+    "stats": {
+      "workouts": "Workouts",
+      "thisWeek": "This week",
+      "sets": "Sets",
+      "volume": "Total volume"
+    },
+    "unit": "Weight unit",
+    "units": {
+      "kg": "Kilograms (kg)",
+      "lb": "Pounds (lb)"
+    },
+    "unitHint": "Applies to new workouts. Data is always stored in kilograms, so nothing is lost.",
+    "rest": "Default rest timer",
+    "restOff": "Off",
+    "restHint": "Starts automatically after you tick a set.",
+    "version": "Version {{version}}"
   },
   "database": {
     "errorTitle": "Couldn't open the database"
