@@ -47,6 +47,23 @@ export function parseReps(text: string): number | null {
   return value <= MAX_REPS ? value : null;
 }
 
+export type RepsRange = { min: number; max: number };
+
+/** Parses "8" or a range "6-8" / "6–8" (any dash). Returns null when invalid or min > max. */
+export function parseRepsRange(text: string): RepsRange | null {
+  const match = /^\s*(\d+)\s*(?:[-–—]\s*(\d+)\s*)?$/.exec(text);
+  if (!match) return null;
+  const min = parseReps(match[1]!);
+  const max = match[2] === undefined ? min : parseReps(match[2]);
+  if (min === null || max === null || min === 0 || min > max) return null;
+  return { min, max };
+}
+
+/** "8" or "6–8". */
+export function formatRepsRange(min: number, max: number | null): string {
+  return max !== null && max !== min ? `${min}–${max}` : String(min);
+}
+
 /** Formats a weight for display in the user's language, e.g. 62.5 -> "62,5" in ru. */
 export function formatWeight(kg: number, unit: WeightUnit, language: string): string {
   return new Intl.NumberFormat(language, { maximumFractionDigits: 2 }).format(

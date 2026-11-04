@@ -50,7 +50,13 @@ export function getRoutineSpecs(db: Database, routineIds: readonly string[]): Ma
   for (const item of items) {
     const planned: TargetSet[] = sets
       .filter((s) => s.routineExerciseId === item.id)
-      .map((s) => ({ weightKg: s.weightKg, reps: s.reps, durationSeconds: s.durationSeconds, distanceM: s.distanceM }));
+      .map((s) => ({
+        weightKg: s.weightKg,
+        reps: s.reps,
+        repsMax: s.repsMax,
+        durationSeconds: s.durationSeconds,
+        distanceM: s.distanceM,
+      }));
     // Routines saved before per-set targets existed only have a set count.
     const filled = planned.length > 0 ? planned : Array.from({ length: item.targetSets }, () => EMPTY_TARGET);
     const list = result.get(item.routineId) ?? [];

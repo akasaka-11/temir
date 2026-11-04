@@ -113,6 +113,16 @@ describe('toggleSet', () => {
     expect(countCompletedSets(result!.workout)).toBe(0);
   });
 
+  it('uses the lower bound of the planned range when nothing else is known', () => {
+    const w = addExercises(newWorkout(), [{ exerciseId: 'x', sets: [{ repsHint: '6–8' }] }], idFactory());
+    const row = w.exercises[0]!;
+    const result = toggleSet(w, row.id, row.sets[0]!.id);
+    expect(result!.workout.exercises[0]!.sets[0]).toMatchObject({ repsText: '6', isCompleted: true });
+    // last time's reps win over the plan
+    const withPrevious = toggleSet(w, row.id, row.sets[0]!.id, { repsText: '9' });
+    expect(withPrevious!.workout.exercises[0]!.sets[0]!.repsText).toBe('9');
+  });
+
   it('completes cardio with a duration, distance optional', () => {
     const { w, rowId, setId } = setup('cardio');
     expect(toggleSet(w, rowId, setId)).toBeNull();

@@ -2,7 +2,7 @@ import type { ExerciseKind } from '@/db/schema';
 
 import type { MakeId, NewActiveExercise, SetTexts } from './activeWorkout';
 import { distanceToInput, formatCardioDuration, parseDistanceKm, parseDuration } from './cardio';
-import { parseReps, parseWeight, toKg, type WeightUnit, weightToInput } from './units';
+import { formatRepsRange, parseRepsRange, parseWeight, toKg, type WeightUnit, weightToInput } from './units';
 
 // Routines (workout templates): pure editing logic and conversions.
 
@@ -13,12 +13,21 @@ export const DEFAULT_STRENGTH_SETS = 3;
 /** A planned set as stored: every target is optional. Weight in kg. */
 export type TargetSet = {
   weightKg: number | null;
+  /** Target reps, or the lower bound of a range. */
   reps: number | null;
+  /** Upper bound of a range like 6–8 (null for a single target). */
+  repsMax: number | null;
   durationSeconds: number | null;
   distanceM: number | null;
 };
 
-export const EMPTY_TARGET: TargetSet = { weightKg: null, reps: null, durationSeconds: null, distanceM: null };
+export const EMPTY_TARGET: TargetSet = {
+  weightKg: null,
+  reps: null,
+  repsMax: null,
+  durationSeconds: null,
+  distanceM: null,
+};
 
 /** A routine exercise with its planned sets, independent of the UI. */
 export type RoutineSpecItem = { exerciseId: string; kind: ExerciseKind; sets: TargetSet[] };
@@ -127,12 +136,13 @@ export function parseTargetSet(texts: Partial<SetTexts>, kind: ExerciseKind, uni
     };
   }
   const weight = filled(texts.weightText) ? parseWeight(texts.weightText!, unit) : undefined;
-  const reps = filled(texts.repsText) ? parseReps(texts.repsText!) : undefined;
-  if (weight === null || reps === null || reps === 0) return null;
+  const reps = filled(texts.repsText) ? parseRepsRange(texts.repsText!) : undefined;
+  if (weight === null || reps === null) return null;
   return {
     ...EMPTY_TARGET,
     weightKg: weight === undefined ? null : toKg(weight, unit),
-    reps: reps ?? null,
+    reps: reps?.min ?? null,
+    repsMax: reps && reps.max !== reps.min ? reps.max : null,
   };
 }
 
@@ -140,7 +150,7 @@ export function parseTargetSet(texts: Partial<SetTexts>, kind: ExerciseKind, uni
 export function targetToTexts(target: TargetSet, unit: WeightUnit): SetTexts {
   return {
     weightText: target.weightKg === null ? '' : weightToInput(target.weightKg, unit),
-    repsText: target.reps === null ? '' : String(target.reps),
+    repsText: target.reps === null ? '' : formatRepsRange(target.reps, target.repsMax),
     durationText: target.durationSeconds === null ? '' : formatCardioDuration(target.durationSeconds),
     distanceText: target.distanceM === null ? '' : distanceToInput(target.distanceM),
   };
@@ -177,12 +187,19 @@ export function specToDraftItems(items: readonly RoutineSpecItem[], unit: Weight
   }));
 }
 
-/** Routine -> exercises for a new workout, with targets prefilled in the workout's unit. */
+/**
+ * Routine -> exercises for a new workout, with targets prefilled in the workout's unit.
+ * A single reps target is prefilled; a range ("6–8") becomes a hint, the user enters what they did.
+ */
 export function specToWorkoutEntries(items: readonly RoutineSpecItem[], unit: WeightUnit): NewActiveExercise[] {
   return items.map((item) => ({
     exerciseId: item.exerciseId,
     kind: item.kind,
-    sets: item.sets.map((target) => targetToTexts(target, unit)),
+    sets: item.sets.map((target) => {
+      const texts = targetToTexts(target, unit);
+      const isRange = target.repsMax !== null && target.repsMax !== target.reps;
+      return isRange ? { ...texts, repsText: '', repsHint: texts.repsText } : texts;
+    }),
   }));
 }
 

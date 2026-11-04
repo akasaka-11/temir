@@ -92,7 +92,10 @@ export const routineSets = sqliteTable(
       .references(() => routineExercises.id, { onDelete: 'cascade' }),
     setIndex: integer('set_index').notNull(),
     weightKg: real('weight_kg'),
+    /** Target reps, or the lower bound of a range like 6–8. */
     reps: integer('reps'),
+    /** Upper bound of a reps range (null for a single target). */
+    repsMax: integer('reps_max'),
     durationSeconds: integer('duration_seconds'),
     distanceM: real('distance_m'),
     ...timestamps,

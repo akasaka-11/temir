@@ -10,7 +10,7 @@ export type BuiltInExercise = {
 };
 
 // Bump when this list changes so existing installs pick up the new rows.
-export const EXERCISE_SEED_VERSION = 2;
+export const EXERCISE_SEED_VERSION = 3;
 
 // Built-in exercises. Names live in locales under "exerciseNames.<nameKey>".
 // Ids are fixed (never change them): the same exercise must have the same id on every device.
@@ -89,4 +89,13 @@ export const BUILT_IN_EXERCISES: readonly BuiltInExercise[] = [
   { id: '4d1b657f-6a33-5591-b077-5994be78505a', nameKey: 'stair_climber', muscleGroup: 'cardio', equipment: 'machine', kind: 'cardio' },
   { id: 'ffc8a7d9-c7c0-5750-8d3f-7eb2a0fc615b', nameKey: 'jump_rope', muscleGroup: 'cardio', equipment: 'other', kind: 'cardio' },
   { id: 'e3b3b785-5d37-541d-b24e-b275f2ad30ad', nameKey: 'swimming', muscleGroup: 'cardio', equipment: 'other', kind: 'cardio' },
+  { id: 'f350d439-b16f-5ee3-93cc-8e012dc35f3c', nameKey: 'chest_supported_row', muscleGroup: 'back', equipment: 'dumbbell' },
+  { id: '1d24e163-db7c-52ed-a932-b92f03c6ca4f', nameKey: 'reverse_pec_deck', muscleGroup: 'shoulders', equipment: 'machine' },
+  { id: 'e5c54bcb-d23f-5cce-b484-665db3a9c198', nameKey: 'ez_bar_curl', muscleGroup: 'biceps', equipment: 'barbell' },
+  { id: 'c79d4426-7041-5f15-aba8-8d7c4ac17630', nameKey: 'incline_machine_press', muscleGroup: 'chest', equipment: 'machine' },
+  { id: '506e649c-72c8-57db-ba14-697ee400cac0', nameKey: 'pec_deck', muscleGroup: 'chest', equipment: 'machine' },
+  { id: '60b2c1aa-c409-5e2f-bf3d-4eb9cab9ba00', nameKey: 'straight_arm_pulldown', muscleGroup: 'back', equipment: 'cable' },
+  { id: '861a5229-f8ff-5530-9010-50540da1c474', nameKey: 'cable_lateral_raise', muscleGroup: 'shoulders', equipment: 'cable' },
+  { id: 'b9b9a5d3-57b7-5e89-9fdb-ba7efc57910d', nameKey: 'incline_dumbbell_curl', muscleGroup: 'biceps', equipment: 'dumbbell' },
+  { id: 'da7509d9-3b9b-53fa-ac77-91509191b0cc', nameKey: 'seated_leg_curl', muscleGroup: 'hamstrings', equipment: 'machine' },
 ];

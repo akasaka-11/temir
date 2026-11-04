@@ -95,7 +95,7 @@ describe('parseTargetSet', () => {
 
 describe('conversions', () => {
   it('round-trips targets through texts', () => {
-    const target = { weightKg: 62.5, reps: 8, durationSeconds: null, distanceM: null };
+    const target = { weightKg: 62.5, reps: 8, repsMax: null, durationSeconds: null, distanceM: null };
     expect(parseTargetSet(targetToTexts(target, 'kg'), 'strength', 'kg')).toEqual(target);
     const cardio = { ...EMPTY_TARGET, durationSeconds: 1530, distanceM: 5200 };
     expect(parseTargetSet(targetToTexts(cardio, 'kg'), 'cardio', 'kg')).toEqual(cardio);
@@ -107,10 +107,26 @@ describe('conversions', () => {
     const item = draft.items[0]!;
     draft = updateDraftSet(draft, item.key, item.sets[0]!.key, { weightText: '100', repsText: '5' });
     const spec = draftToSpec(draft, 'kg');
-    expect(spec[0]!.sets[0]).toEqual({ weightKg: 100, reps: 5, durationSeconds: null, distanceM: null });
+    expect(spec[0]!.sets[0]).toEqual({ weightKg: 100, reps: 5, repsMax: null, durationSeconds: null, distanceM: null });
     expect(spec[0]!.sets[1]).toEqual(EMPTY_TARGET);
     const items = specToDraftItems(spec, 'kg', makeId);
     expect(items[0]!.sets[0]).toMatchObject({ weightText: '100', repsText: '5' });
+  });
+
+  it('stores reps ranges and shows them back as text', () => {
+    const target = parseTargetSet({ repsText: '6-8' }, 'strength', 'kg')!;
+    expect(target).toMatchObject({ reps: 6, repsMax: 8 });
+    expect(targetToTexts(target, 'kg').repsText).toBe('6–8');
+    expect(parseTargetSet({ repsText: '8–8' }, 'strength', 'kg')).toMatchObject({ reps: 8, repsMax: null });
+    expect(parseTargetSet({ repsText: '8-6' }, 'strength', 'kg')).toBeNull();
+  });
+
+  it('turns a reps range into a hint instead of a value when starting a workout', () => {
+    const [entry] = specToWorkoutEntries(
+      [{ exerciseId: 'bench', kind: 'strength', sets: [{ ...EMPTY_TARGET, reps: 6, repsMax: 8 }] }],
+      'kg',
+    );
+    expect(entry!.sets![0]).toMatchObject({ repsText: '', repsHint: '6–8' });
   });
 
   it('prefills workout sets in the workout unit', () => {

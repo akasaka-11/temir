@@ -1,9 +1,11 @@
 import {
+  formatRepsRange,
   formatWeight,
   fromKg,
   kgToLb,
   lbToKg,
   parseReps,
+  parseRepsRange,
   parseWeight,
   roundWeight,
   toKg,
@@ -42,6 +44,27 @@ describe('parseReps', () => {
 
   it.each(['', '8.5', '8,5', '-1', 'x', '1001'])('rejects %p', (input) => {
     expect(parseReps(input)).toBeNull();
+  });
+});
+
+describe('reps ranges', () => {
+  it.each([
+    ['8', { min: 8, max: 8 }],
+    ['6-8', { min: 6, max: 8 }],
+    ['6–8', { min: 6, max: 8 }],
+    [' 12 — 20 ', { min: 12, max: 20 }],
+  ])('parses %p', (input, expected) => {
+    expect(parseRepsRange(input)).toEqual(expected);
+  });
+
+  it.each(['', '0', '8-6', 'a-b', '6-', '6-8-10', '0-5'])('rejects %p', (input) => {
+    expect(parseRepsRange(input)).toBeNull();
+  });
+
+  it('formats single targets and ranges', () => {
+    expect(formatRepsRange(8, null)).toBe('8');
+    expect(formatRepsRange(8, 8)).toBe('8');
+    expect(formatRepsRange(6, 8)).toBe('6–8');
   });
 });
 

@@ -1,0 +1,1 @@
+ALTER TABLE `routine_sets` ADD `reps_max` integer;

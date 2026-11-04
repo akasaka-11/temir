@@ -51,7 +51,7 @@ export function RoutineExerciseEditor({ item, name, unit, isFirst, isLast }: Pro
   const fields: [keyof SetTexts, keyof SetTexts] = cardio
     ? ['durationText', 'distanceText']
     : ['weightText', 'repsText'];
-  const placeholders = cardio ? ['0:00', '—'] : ['—', '—'];
+  const placeholders = cardio ? ['0:00', '—'] : ['—', '8–12'];
 
   return (
     <View style={styles.card}>
@@ -84,7 +84,7 @@ export function RoutineExerciseEditor({ item, name, unit, isFirst, isLast }: Pro
                 placeholder={placeholders[i]}
                 placeholderTextColor={colors.textMuted}
                 keyboardType={
-                  field === 'repsText' ? 'number-pad' : field === 'durationText' ? 'numbers-and-punctuation' : 'decimal-pad'
+                  field === 'weightText' || field === 'distanceText' ? 'decimal-pad' : 'numbers-and-punctuation'
                 }
                 style={[styles.cell, styles.input, styles.field, invalid && styles.fieldError]}
                 maxLength={8}

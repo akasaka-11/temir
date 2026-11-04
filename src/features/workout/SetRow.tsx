@@ -14,7 +14,7 @@ type Field = {
 };
 
 /** Strength: weight + reps. Cardio: duration (mm:ss) + distance (km). */
-function fieldsFor(kind: ExerciseKind, fallback: SetFallback | undefined): [Field, Field] {
+function fieldsFor(kind: ExerciseKind, fallback: SetFallback | undefined, repsHint?: string): [Field, Field] {
   if (kind === 'cardio') {
     return [
       { key: 'durationText', keyboardType: 'numbers-and-punctuation', placeholder: fallback?.durationText || '0:00', maxLength: 8 },
@@ -23,7 +23,7 @@ function fieldsFor(kind: ExerciseKind, fallback: SetFallback | undefined): [Fiel
   }
   return [
     { key: 'weightText', keyboardType: 'decimal-pad', placeholder: fallback?.weightText || '0', maxLength: 7 },
-    { key: 'repsText', keyboardType: 'number-pad', placeholder: fallback?.repsText || '0', maxLength: 4 },
+    { key: 'repsText', keyboardType: 'number-pad', placeholder: fallback?.repsText || repsHint || '0', maxLength: 4 },
   ];
 }
 
@@ -71,7 +71,7 @@ export const SetRow = memo(function SetRow({
           {previousText ?? '—'}
         </Text>
       </Pressable>
-      {fieldsFor(kind, fallback).map((field) => (
+      {fieldsFor(kind, fallback, set.repsHint).map((field) => (
         <TextInput
           key={field.key}
           value={set[field.key] ?? ''}

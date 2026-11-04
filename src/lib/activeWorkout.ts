@@ -1,7 +1,7 @@
 import type { ExerciseKind } from '@/db/schema';
 
 import { parseDistanceKm, parseDuration } from './cardio';
-import { parseReps, parseWeight, toKg, type WeightUnit } from './units';
+import { parseReps, parseRepsRange, parseWeight, toKg, type WeightUnit } from './units';
 
 // Pure state transitions for the workout in progress. The Zustand store only wires them up,
 // which keeps this logic easy to unit test.
@@ -15,6 +15,8 @@ export type SetTexts = {
   durationText?: string;
   /** Kilometres. */
   distanceText?: string;
+  /** Planned reps from a template ("8" or "6–8"); shown as a hint, not a value. */
+  repsHint?: string;
 };
 
 export type ActiveSet = SetTexts & {
@@ -104,6 +106,7 @@ export function addSet(workout: ActiveWorkout, rowId: string, makeId: MakeId): A
       ? newSet(makeId(), {
           weightText: last.weightText,
           repsText: last.repsText,
+          repsHint: last.repsHint,
           durationText: last.durationText,
           distanceText: last.distanceText,
         })
@@ -160,12 +163,16 @@ export function parseSetTexts(texts: Partial<SetTexts>, kind: ExerciseKind, unit
   return { weightKg: toKg(weight, unit), reps, durationSeconds: null, distanceM: null };
 }
 
-/** Each empty field takes the fallback (last time's value). */
+/**
+ * Each empty field takes the fallback (last time's value). Reps without a previous
+ * value fall back to the lower bound of the template's planned range.
+ */
 function withFallback(set: SetTexts, fallback: SetFallback | undefined): SetTexts {
   const pick = (own: string | undefined, other: string | undefined) => (own ?? '').trim() || other || '';
+  const hintMin = set.repsHint ? parseRepsRange(set.repsHint)?.min : undefined;
   return {
     weightText: pick(set.weightText, fallback?.weightText),
-    repsText: pick(set.repsText, fallback?.repsText),
+    repsText: pick(pick(set.repsText, fallback?.repsText), hintMin === undefined ? '' : String(hintMin)),
     durationText: pick(set.durationText, fallback?.durationText),
     distanceText: pick(set.distanceText, fallback?.distanceText),
   };
