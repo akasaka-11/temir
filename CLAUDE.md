@@ -152,6 +152,7 @@ src/
 Открытые вопросы: казахские переводы — на ревью у пользователя.
 
 Веб-версия (PWA, для установки на экран «Домой»):
+- Опубликовано: https://temir-pearl.vercel.app (Vercel, команда «lunariz's projects»), код — приватный https://github.com/akasaka-11/temir. Пуш в `main` → Vercel пересобирает сайт сам.
 - Сборка `npm.cmd run web:build` → `dist/`; локально `npm.cmd run web:serve` (порт 8096, те же заголовки, что на хостинге). Хостинг — Vercel (`vercel.json`: COOP/COEP-заголовки для SQLite, SPA-rewrite).
 - SQLite в браузере (OPFS, wa-sqlite): нужен `crossOriginIsolated` → заголовки COOP `same-origin` + COEP `require-corp` (Safari не умеет `credentialless`). Лимит пула — 6 файлов, WAL на вебе выключен. Синхронные вызовы падают, пока воркер грузится → `index.js` (точка входа) сначала открывает `:memory:` асинхронно.
 - `Alert` в вебе не работает → везде `showAlert` из `src/components/alert` (веб: свой диалог в `alert.web.tsx`, `AlertHost` в корневом layout). Файл именно `.tsx`: Metro ищет `.ts` раньше `.tsx`, и `alert.ts` перекрыл бы `alert.web.tsx`.
