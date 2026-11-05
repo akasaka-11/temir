@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { useMemo } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
@@ -17,6 +17,7 @@ import type { WeightUnit } from '@/lib/units';
 import { formatDuration } from '@/lib/workoutMath';
 import { useSettings } from '@/store/settings';
 import { colors, spacing, typography } from '@/theme';
+import { showAlert } from '@/components/alert';
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -44,7 +45,7 @@ export default function ProfileScreen() {
   ];
 
   function confirmClearHistory() {
-    Alert.alert(t('profile.clearHistoryTitle'), t('profile.clearHistoryBody', { count: stats.workouts }), [
+    showAlert(t('profile.clearHistoryTitle'), t('profile.clearHistoryBody', { count: stats.workouts }), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('profile.clearHistoryConfirm'), style: 'destructive', onPress: () => deleteAllWorkouts(db) },
     ]);

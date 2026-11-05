@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -8,6 +7,7 @@ import { StatGrid } from '@/components/StatGrid';
 import { useExerciseNames } from '@/features/exercises/useExerciseNames';
 import { buildWorkoutStatTiles } from '@/features/workout/statTiles';
 import { formatRecordValue } from '@/features/workout/formatSet';
+import { goBack } from '@/lib/navigation';
 import { useActiveWorkout } from '@/store/activeWorkout';
 import { useSettings } from '@/store/settings';
 import { colors, radius, spacing, typography } from '@/theme';
@@ -20,7 +20,7 @@ export default function WorkoutSummaryScreen() {
 
   function close() {
     useActiveWorkout.getState().setSummary(null);
-    router.back();
+    goBack();
   }
 
   if (!summary) return null;

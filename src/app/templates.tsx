@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +11,7 @@ import {
 } from '@/features/routines/builtInTemplates';
 import { RoutineCard } from '@/features/routines/RoutineCard';
 import { useStartRoutine } from '@/features/routines/useStartRoutine';
+import { goBack } from '@/lib/navigation';
 import type { RoutineSpecItem } from '@/lib/routineDraft';
 import { colors, radius, spacing, typography } from '@/theme';
 
@@ -53,7 +53,7 @@ export default function TemplatesScreen() {
           onCopy={() => copy(name, items)}
           onStart={() => {
             start(name, items);
-            router.back();
+            goBack();
           }}
         />
         {key === 'cardio' && <Text style={styles.muted}>{t('templates.cardioHint')}</Text>}

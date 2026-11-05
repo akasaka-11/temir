@@ -1,6 +1,5 @@
-import { router } from 'expo-router';
-
 import { ExercisePicker } from '@/features/exercises/ExercisePicker';
+import { goBack } from '@/lib/navigation';
 import { useRoutineDraft } from '@/store/routineDraft';
 
 export default function RoutineAddExercisesScreen() {
@@ -8,7 +7,7 @@ export default function RoutineAddExercisesScreen() {
     <ExercisePicker
       onConfirm={(picked) => {
         useRoutineDraft.getState().addExercises(picked);
-        router.back();
+        goBack();
       }}
     />
   );

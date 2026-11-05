@@ -1,4 +1,5 @@
 # Renders the Temir app icons: a "T" whose top bar is a barbell.
+import os
 import sys
 from PIL import Image, ImageDraw
 
@@ -57,4 +58,13 @@ render(1024, 0.56, CLEAR, f'{OUT}/android-icon-monochrome.png', oy=OY * 0.7)
 Image.new('RGB', (1024, 1024), BG[:3]).save(f'{OUT}/android-icon-background.png')
 render(1024, 0.9, CLEAR, f'{OUT}/splash-icon.png')
 render(48, 0.86, BG, f'{OUT}/favicon.png', oy=OY)
+
+# Web app (PWA): home-screen icons, served from public/ next to assets/.
+WEB = os.path.join(os.path.dirname(os.path.abspath(OUT)), 'public')
+os.makedirs(WEB, exist_ok=True)
+render(180, 0.78, BG, f'{WEB}/apple-touch-icon.png', oy=OY)
+render(192, 0.78, BG, f'{WEB}/icon-192.png', oy=OY)
+render(512, 0.78, BG, f'{WEB}/icon-512.png', oy=OY)
+# Maskable: Android may crop it to a circle, so keep the mark inside the safe zone.
+render(512, 0.56, BG, f'{WEB}/icon-maskable-512.png', oy=OY * 0.7)
 print('ok')

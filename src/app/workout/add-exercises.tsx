@@ -1,6 +1,5 @@
-import { router } from 'expo-router';
-
 import { ExercisePicker } from '@/features/exercises/ExercisePicker';
+import { goBack } from '@/lib/navigation';
 import { useActiveWorkout } from '@/store/activeWorkout';
 
 export default function AddExercisesScreen() {
@@ -8,7 +7,7 @@ export default function AddExercisesScreen() {
     <ExercisePicker
       onConfirm={(picked) => {
         useActiveWorkout.getState().addExercises(picked);
-        router.back();
+        goBack();
       }}
     />
   );

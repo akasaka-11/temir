@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
 import { colors, radius, spacing, typography } from '@/theme';
+import { showAlert } from '@/components/alert';
 
 type Props = {
   name: string;
@@ -27,7 +28,7 @@ export const RoutineCard = memo(function RoutineCard({
   const { t } = useTranslation();
 
   function openMenu() {
-    Alert.alert(name, undefined, [
+    showAlert(name, undefined, [
       ...(onEdit ? [{ text: t('routines.edit'), onPress: onEdit }] : []),
       ...(onCopy ? [{ text: t('routines.copy'), onPress: onCopy }] : []),
       ...(onDelete
@@ -36,7 +37,7 @@ export const RoutineCard = memo(function RoutineCard({
               text: t('routines.delete'),
               style: 'destructive' as const,
               onPress: () =>
-                Alert.alert(t('routines.deleteTitle'), name, [
+                showAlert(t('routines.deleteTitle'), name, [
                   { text: t('common.cancel'), style: 'cancel' },
                   { text: t('common.remove'), style: 'destructive', onPress: onDelete },
                 ]),

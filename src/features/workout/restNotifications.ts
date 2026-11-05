@@ -1,8 +1,14 @@
 import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+
+// Web: scheduled local notifications aren't supported without a push server, so they are skipped
+// (no permission prompt); the in-app rest timer still works.
+const supported = Platform.OS !== 'web';
 
 // While the app is open the rest timer UI (plus a haptic) is enough, so foreground
 // notifications are silent. The notification matters when the app is in the background.
 export function configureNotifications(): void {
+  if (!supported) return;
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowBanner: false,
@@ -14,6 +20,7 @@ export function configureNotifications(): void {
 }
 
 export async function ensureNotificationPermission(): Promise<boolean> {
+  if (!supported) return false;
   const current = await Notifications.getPermissionsAsync();
   if (current.granted) return true;
   if (!current.canAskAgain) return false;

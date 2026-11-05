@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { memo, useCallback, useMemo } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
@@ -15,6 +15,7 @@ import { colors, radius, spacing, typography } from '@/theme';
 import { formatSetResult, setToFallback } from './formatSet';
 import { SET_COLUMNS, SetRow } from './SetRow';
 import { useRestTimer } from './useRestTimer';
+import { showAlert } from '@/components/alert';
 
 type Props = {
   row: ActiveExercise;
@@ -66,7 +67,7 @@ export const ExerciseCard = memo(function ExerciseCard({ row, name, previousSets
 
   const handleRemoveSet = useCallback(
     (setId: string, index: number) => {
-      Alert.alert(t('workout.removeSetTitle', { number: index + 1 }), undefined, [
+      showAlert(t('workout.removeSetTitle', { number: index + 1 }), undefined, [
         { text: t('common.cancel'), style: 'cancel' },
         { text: t('common.remove'), style: 'destructive', onPress: () => actions.removeSet(rowId, setId) },
       ]);
@@ -83,7 +84,7 @@ export const ExerciseCard = memo(function ExerciseCard({ row, name, previousSets
   );
 
   function confirmRemoveExercise() {
-    Alert.alert(t('workout.removeExerciseTitle'), name, [
+    showAlert(t('workout.removeExerciseTitle'), name, [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.remove'), style: 'destructive', onPress: () => actions.removeExercise(rowId) },
     ]);
@@ -106,7 +107,9 @@ export const ExerciseCard = memo(function ExerciseCard({ row, name, previousSets
       </View>
 
       <View style={styles.columns}>
-        <Text style={[styles.column, { width: SET_COLUMNS.index }]}>{t('workout.columns.set')}</Text>
+        <Text style={[styles.column, { width: SET_COLUMNS.index }]} numberOfLines={1}>
+          {t('workout.columns.set')}
+        </Text>
         <Text style={[styles.column, styles.previousColumn]}>{t('workout.columns.previous')}</Text>
         <Text style={[styles.column, { width: SET_COLUMNS.input }]}>
           {kind === 'cardio' ? t('workout.columns.time') : t(`units.${unit}`)}

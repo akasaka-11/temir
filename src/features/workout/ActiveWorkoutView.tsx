@@ -2,7 +2,7 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useKeepAwake } from 'expo-keep-awake';
 import { router } from 'expo-router';
 import { useMemo } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
@@ -19,6 +19,7 @@ import { finishWorkout } from './finishWorkout';
 import { RestTimerBar } from './RestTimerBar';
 import { useRestTimer } from './useRestTimer';
 import { WorkoutTimer } from './WorkoutTimer';
+import { showAlert } from '@/components/alert';
 
 export function ActiveWorkoutView({ workout }: { workout: ActiveWorkout }) {
   useKeepAwake(); // screen stays on during the workout
@@ -42,7 +43,7 @@ export function ActiveWorkoutView({ workout }: { workout: ActiveWorkout }) {
   }
 
   function confirmDiscard() {
-    Alert.alert(t('workout.discardTitle'), t('workout.discardBody'), [
+    showAlert(t('workout.discardTitle'), t('workout.discardBody'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('workout.discard'), style: 'destructive', onPress: discard },
     ]);
@@ -54,11 +55,11 @@ export function ActiveWorkoutView({ workout }: { workout: ActiveWorkout }) {
       result = finishWorkout(db, workout);
     } catch (error) {
       // The workout stays in the store, so nothing is lost and the user can retry.
-      Alert.alert(t('workout.saveErrorTitle'), error instanceof Error ? error.message : String(error));
+      showAlert(t('workout.saveErrorTitle'), error instanceof Error ? error.message : String(error));
       return;
     }
     if (result.status === 'empty') {
-      Alert.alert(t('workout.emptyFinishTitle'), t('workout.emptyFinishBody'), [
+      showAlert(t('workout.emptyFinishTitle'), t('workout.emptyFinishBody'), [
         { text: t('common.cancel'), style: 'cancel' },
         { text: t('workout.discard'), style: 'destructive', onPress: discard },
       ]);
@@ -72,7 +73,7 @@ export function ActiveWorkoutView({ workout }: { workout: ActiveWorkout }) {
   }
 
   function confirmFinish() {
-    Alert.alert(t('workout.finishTitle'), t('workout.finishBody', { count: completed }), [
+    showAlert(t('workout.finishTitle'), t('workout.finishBody', { count: completed }), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('workout.finish'), onPress: finish },
     ]);

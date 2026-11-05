@@ -1,6 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
@@ -12,10 +12,12 @@ import { useExerciseCatalog } from '@/features/exercises/useExerciseNames';
 import { formatSetResult } from '@/features/workout/formatSet';
 import { buildWorkoutStatTiles } from '@/features/workout/statTiles';
 import { buildWorkoutStats, formatTime, formatWorkoutDate } from '@/lib/history';
+import { goBack } from '@/lib/navigation';
 import { formatWeight } from '@/lib/units';
 import { estimateOneRepMax } from '@/lib/workoutMath';
 import { useSettings } from '@/store/settings';
 import { colors, radius, spacing, typography } from '@/theme';
+import { showAlert } from '@/components/alert';
 
 export default function WorkoutDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -45,14 +47,14 @@ export default function WorkoutDetailScreen() {
   );
 
   function confirmDelete() {
-    Alert.alert(t('history.deleteTitle'), t('history.deleteBody'), [
+    showAlert(t('history.deleteTitle'), t('history.deleteBody'), [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('common.remove'),
         style: 'destructive',
         onPress: () => {
           deleteWorkout(db, id);
-          router.back();
+          goBack();
         },
       },
     ]);

@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +7,7 @@ import { db } from '@/db/client';
 import { createCustomExercise } from '@/db/repositories/exercises';
 import { EQUIPMENT, type Equipment, MUSCLE_GROUPS, type MuscleGroup } from '@/db/schema';
 import { MAX_EXERCISE_NAME_LENGTH, validateExerciseName } from '@/lib/exercises';
+import { goBack } from '@/lib/navigation';
 import { colors, radius, spacing, typography } from '@/theme';
 
 type FormErrors = { name?: string; muscleGroup?: string };
@@ -28,7 +28,7 @@ export default function NewExerciseScreen() {
     if (!result.ok || muscleGroup === null) return;
 
     createCustomExercise(db, { name: result.name, muscleGroup, equipment });
-    router.back();
+    goBack();
   }
 
   return (

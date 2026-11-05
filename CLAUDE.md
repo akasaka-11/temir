@@ -150,3 +150,10 @@ src/
 - Пользователь попросил пройти этапы 6–8 подряд без остановок (проверки делаю сам).
 Отложено пользователем: изображения упражнений (вариант — SVG-иконки групп мышц/пиктограммы, обсудить на этапе 8).
 Открытые вопросы: казахские переводы — на ревью у пользователя.
+
+Веб-версия (PWA, для установки на экран «Домой»):
+- Сборка `npm.cmd run web:build` → `dist/`; локально `npm.cmd run web:serve` (порт 8096, те же заголовки, что на хостинге). Хостинг — Vercel (`vercel.json`: COOP/COEP-заголовки для SQLite, SPA-rewrite).
+- SQLite в браузере (OPFS, wa-sqlite): нужен `crossOriginIsolated` → заголовки COOP `same-origin` + COEP `require-corp` (Safari не умеет `credentialless`). Лимит пула — 6 файлов, WAL на вебе выключен. Синхронные вызовы падают, пока воркер грузится → `index.js` (точка входа) сначала открывает `:memory:` асинхронно.
+- `Alert` в вебе не работает → везде `showAlert` из `src/components/alert` (веб: свой диалог в `alert.web.tsx`, `AlertHost` в корневом layout). Файл именно `.tsx`: Metro ищет `.ts` раньше `.tsx`, и `alert.ts` перекрыл бы `alert.web.tsx`.
+- Назад — `goBack()` из `src/lib/navigation.ts` (если открыли экран напрямую, `router.back()` ничего не делает).
+- Уведомления таймера отдыха на вебе отключены (только таймер в приложении). PWA-файлы: `public/index.html`, `manifest.webmanifest`, `sw.js` (офлайн-кэш), иконки — из `scripts/generate-icons.py`.

@@ -1,6 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
@@ -18,10 +18,12 @@ import {
   specToDraftItems,
   validateDraft,
 } from '@/lib/routineDraft';
+import { goBack } from '@/lib/navigation';
 import type { WeightUnit } from '@/lib/units';
 import { useRoutineDraft } from '@/store/routineDraft';
 import { useSettings } from '@/store/settings';
 import { colors, radius, spacing, typography } from '@/theme';
+import { showAlert } from '@/components/alert';
 
 function loadDraft(id: string, unit: WeightUnit): RoutineDraft {
   const routine = getRoutine(db, id);
@@ -52,18 +54,18 @@ export default function RoutineEditorScreen() {
     setErrors(found);
     if (found.length > 0) return;
     saveRoutine(db, { id: draft.id, name: draft.name, notes: draft.notes, items: draftToSpec(draft, unit) });
-    router.back();
+    goBack();
   }
 
   function confirmDelete() {
-    Alert.alert(t('routines.deleteTitle'), draft.name, [
+    showAlert(t('routines.deleteTitle'), draft.name, [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('common.remove'),
         style: 'destructive',
         onPress: () => {
           deleteRoutine(db, id);
-          router.back();
+          goBack();
         },
       },
     ]);

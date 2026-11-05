@@ -100,7 +100,7 @@ export const SetRow = memo(function SetRow({
 });
 
 export const SET_COLUMNS = {
-  index: 28,
+  index: 34,
   input: 64,
   check: 40,
 };

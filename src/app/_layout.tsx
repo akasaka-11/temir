@@ -4,6 +4,7 @@ import { DarkTheme, Stack, ThemeProvider, type Theme } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useTranslation } from 'react-i18next';
 
+import { AlertHost } from '@/components/alert';
 import { DatabaseProvider } from '@/db/DatabaseProvider';
 import { configureNotifications } from '@/features/workout/restNotifications';
 import { colors } from '@/theme';
@@ -61,6 +62,7 @@ export default function RootLayout() {
             options={{ presentation: 'modal', headerShown: false, gestureEnabled: false }}
           />
         </Stack>
+        <AlertHost />
       </DatabaseProvider>
     </ThemeProvider>
   );

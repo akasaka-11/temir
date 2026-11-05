@@ -4,7 +4,8 @@
     "clear": "Clear",
     "cancel": "Cancel",
     "remove": "Remove",
-    "done": "Done"
+    "done": "Done",
+    "ok": "OK"
   },
   "tabs": {
     "workout": "Workout",
