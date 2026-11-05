@@ -16,7 +16,10 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <!-- black-translucent: the page covers the whole screen (safe areas give the top/bottom insets).
+         With "black" iOS shifts the page below the status bar but keeps its full height, so the
+         bottom of the tab bar ends up off-screen. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Temir" />
     <!-- The react-native-web recommended style reset -->
     <style id="expo-reset">

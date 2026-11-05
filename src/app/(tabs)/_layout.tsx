@@ -3,10 +3,23 @@ import { Link } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
 import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet } from 'react-native';
+import { Platform, Pressable, StyleSheet, type ViewStyle } from 'react-native';
+
 import { colors, spacing } from '@/theme';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
+
+// Web: the default tab bar is too short for icon + label with browser fonts (labels get clipped).
+// The home indicator inset comes from CSS env(), which react-native-web passes through as is.
+const webTabBar = (
+  Platform.OS === 'web'
+    ? {
+        height: 'calc(58px + env(safe-area-inset-bottom))',
+        paddingTop: 4,
+        paddingBottom: 'calc(4px + env(safe-area-inset-bottom))',
+      }
+    : {}
+) as ViewStyle;
 
 function tabIcon(name: IconName) {
   return ({ focused, size }: { focused: boolean; size: number }) => (
@@ -22,7 +35,7 @@ export default function TabsLayout() {
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
+        tabBarStyle: [{ backgroundColor: colors.surface, borderTopColor: colors.border }, webTabBar],
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.text,
         headerShadowVisible: false,
