@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Strength Tracker",
-    "slug": "strength-tracker",
-    "scheme": "strengthtracker",
+    "name": "Temir",
+    "slug": "temir",
+    "scheme": "temir",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,13 +10,13 @@
     "backgroundColor": "#000000",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.strengthtracker.app",
+      "bundleIdentifier": "com.akasaka11.temir",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.strengthtracker.app",
+      "package": "com.akasaka11.temir",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -33,7 +33,16 @@
       "expo-localization",
       "expo-sqlite",
       "expo-font",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#000000"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
