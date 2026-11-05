@@ -30,9 +30,9 @@ def draw_mark(draw, size, scale, ox=0.0, oy=0.0):
             a, b = sorted((mx(x0), mx(x1)))
             rect(a, y0, b, y1, r)
 
-        mrect(0.155, bar_y - 0.15, 0.215, bar_y + 0.15, 0.018)  # big plate
-        mrect(0.228, bar_y - 0.11, 0.276, bar_y + 0.11, 0.016)  # small plate
-        mrect(0.288, bar_y - 0.045, 0.306, bar_y + 0.045, 0.006)  # collar
+        mrect(0.226, bar_y - 0.15, 0.286, bar_y + 0.15, 0.018)  # big plate (inner)
+        mrect(0.165, bar_y - 0.11, 0.213, bar_y + 0.11, 0.016)  # small plate (outer)
+        mrect(0.298, bar_y - 0.045, 0.316, bar_y + 0.045, 0.006)  # collar
     # Stem of the T.
     rect(0.44, bar_y - bar_h / 2, 0.56, 0.84, 0.03)
 
